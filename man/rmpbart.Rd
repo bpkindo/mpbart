@@ -20,7 +20,4 @@ rmpbart(Data, testData, Prior, Mcmc, seedvalue)
 \description{
 A function to implement multinomial probit regression via Bayesian Addition Regression Trees using partial marginal data augmentation.
 }
-\examples{
-rmpbart()
-}
 
