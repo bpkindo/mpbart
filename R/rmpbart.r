@@ -91,7 +91,7 @@ XEx = rbind(XEx, matrix(rep(x.train[i,], p-1), byrow = TRUE, ncol = ncol(x.train
 }
 
 
-if(!is.na(x.test)){
+if(!is.na(x.test)[1]){
 	testXEx = NULL;
 	for(i in 1:nrow(x.test)){
 	testXEx = rbind(testXEx, matrix(rep(x.test[i,], p-1), byrow = TRUE, ncol = ncol(x.test) ) )
