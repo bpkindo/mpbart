@@ -72,6 +72,5 @@ XEx <- NULL;
 
  out=rmpbart(Data=Data1, testData = testData1, 
              Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
-
 }
 
