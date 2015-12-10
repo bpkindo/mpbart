@@ -1,6 +1,6 @@
 Package: mpbart
 Title: Multinomial Probit Bayesian Additive Regression Trees
-Version: 1.0
+Version: 0.1
 Authors@R: person("Bereket", "Kindo", email = "bpkindo@gmail.com.com", role = c("aut", "cre"))
 Description: This Package implements multinomial probit model using Bayesian
     Additive Regression Trees.

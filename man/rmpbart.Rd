@@ -32,16 +32,15 @@ train_wave = mlbench.waveform(300)
 test_wave = mlbench.waveform(500)
 traindata = data.frame(train_wave$x, y = train_wave$classes) 
 testdata = data.frame(test_wave$x, y = test_wave$classes)
-n = nrow(traindata)
-testn = nrow(testdata)
-X = traindata[,1:21] 
-X = data.frame(X)
 
-testX = testdata[,1:21] 
-testX = data.frame(testX)
+x.train = data.frame(train_wave$x)
+x.test = data.frame(test_wave$x)
+
+y.train = train_wave$classes
+
 sigma0 = diag(p-1)
-burn = 500
-ndraws = 1500
+burn = 100
+ndraws = 1000
 
 Mcmc1=list(sigma0=sigma0, burn = burn, ndraws = ndraws)
 Prior1 = list(nu=p+2,
@@ -57,35 +56,20 @@ Prior1 = list(nu=p+2,
 
 
 
+out = rmpbart(x.train = x.train, y.train = y.train, x.test = x.test, 
+            Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
 
-XEx = NULL;
-for(i in 1:nrow(X)){
-  XEx = rbind(XEx, matrix(rep(X[i,], p-1), byrow = T, ncol = ncol(X) ) )
-}
+#confusion matrix train
+table(y.train, out$predicted_class_train)
+table(y.train==out$predicted_class_train)/sum(table(y.train==out$predicted_class_train))
+  
 
-testXEx = NULL;
-for(i in 1:nrow(testX)){
-  testXEx = rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = T, ncol = ncol(testX) ) )
-}
+#confusion matrix test
+table(test_wave$classes, out$predicted_class_test)
 
+test_err <- sum(test_wave$classes != out$predicted_class_test)/
+    sum(table(test_wave$classes == out$predicted_class_test))
 
-Data1 = list(p=p,y=traindata$y,X= XEx)
-
-testData1 = list(p=p,y=testdata$y,X= testXEx)
-
-out = rmpbart(Data=Data1, testData = testData1, 
-              Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
-
-class_prob_train = matrix(out$trainpred,ncol = p, byrow = T)
-predicted_class_train = apply(class_prob_train,1,which.max)
-table(Data1$y, predicted_class_train)
-table(Data1$y==predicted_class_train)/sum(table(Data1$y==predicted_class_train))
-
-class_prob_test = matrix(out$testpred,ncol = p, byrow = T)
-predicted_class_test = apply(class_prob_test,1,which.max)
-
-table(testData1$y, predicted_class_test)
-test_err = sum(testData1$y!=predicted_class_test)/sum(table(testData1$y==predicted_class_test))
 cat("test error :", test_err )
 }
 
