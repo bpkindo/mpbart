@@ -58,12 +58,12 @@
 #'   testData1 = list(p=p,y=testdata$y,X= testXEx)
 #'   
 #' 
-#'  out=rmpbart(Data=Data1, testData = testData1, 
+#'  out=mpbart(Data=Data1, testData = testData1, 
 #'              Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
 #' 
     
 
-rmpbart <-
+mpbart <-
   function(Data,testData,Prior,Mcmc,seedvalue) 
   {
     
