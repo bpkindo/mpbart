@@ -2,13 +2,15 @@
 #'
 #' A function to implement multinomial probit regression via Bayesian Addition Regression Trees using partial marginal data augmentation.
 #'
-#' @param Data Training data list that includes the number of choices/classes p, the response y and predictors X: list(p, y, X)
-#' @param testData Testing data list that includes predictors denoted by X: list(X)
+#' @param x.train Training data predictors.
+#' @param y.train Training data observed classes.
+#' @param x.test Test data predictors.
 #' @param Prior List of Priors for MPBART: e.g., Prior = list(nu=p+2,  V= diag(p - 1), ntrees=200,  kfac=2.0,  pbd=1.0, pb=0.5 , beta = 2.0, alpha = 0.95, nc = 100, priorindep = 0,  minobsnode = 10)
 #' @param Mcmc List of MCMC starting values, burn-in ...: e.g.,     list(sigma0 = diag(p - 1), keep = 1, burn = 100, ndraws = 1000, keep_sigma_draws=FALSE)
 #' @param seedvalue random seed value: e.g., seedvalue = 99
 #' @useDynLib mpbart
 #' @examples
+#' 
 #' set.seed(64)
 #' library(mpbart)
 #' p=3
@@ -24,8 +26,8 @@
 #' testX = testdata[,1:21] 
 #' testX = data.frame(testX)
 #' sigma0 = diag(p-1)
-#' burn = 100
-#' ndraws = 1000
+#' burn = 500
+#' ndraws = 1500
 #' 
 #' Mcmc1=list(sigma0=sigma0, burn = burn, ndraws = ndraws)
 #' Prior1 = list(nu=p+2,
@@ -42,35 +44,71 @@
 #' 
 #' 
 #' 
-#' XEx <- NULL;
-#'   for(i in 1:nrow(X)){
-#'     XEx <- rbind(XEx, matrix(rep(X[i,], p-1), byrow = TRUE, ncol = ncol(X) ) )
-#'   }
-#'   
-#'   testXEx <- NULL;
-#'   for(i in 1:nrow(testX)){
-#'     testXEx <- rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = TRUE, ncol = ncol(testX) ) )
-#'   }
-#'   
-#'   
-#'   Data1 = list(p=p,y=traindata$y,X= XEx)
-#'   
-#'   testData1 = list(p=p,y=testdata$y,X= testXEx)
-#'   
+#' XEx = NULL;
+#' for(i in 1:nrow(X)){
+#'   XEx = rbind(XEx, matrix(rep(X[i,], p-1), byrow = T, ncol = ncol(X) ) )
+#' }
 #' 
-#'  out=rmpbart(Data=Data1, testData = testData1, 
-#'              Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
+#' testXEx = NULL;
+#' for(i in 1:nrow(testX)){
+#'   testXEx = rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = T, ncol = ncol(testX) ) )
+#' }
+#' 
+#' 
+#' Data1 = list(p=p,y=traindata$y,X= XEx)
+#' 
+#' testData1 = list(p=p,y=testdata$y,X= testXEx)
+#' 
+#' out = rmpbart(Data=Data1, testData = testData1, 
+#'               Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
+#' 
+#' class_prob_train = matrix(out$trainpred,ncol = p, byrow = T)
+#' predicted_class_train = apply(class_prob_train,1,which.max)
+#' table(Data1$y, predicted_class_train)
+#' table(Data1$y==predicted_class_train)/sum(table(Data1$y==predicted_class_train))
+#' 
+#' class_prob_test = matrix(out$testpred,ncol = p, byrow = T)
+#' predicted_class_test = apply(class_prob_test,1,which.max)
+#' 
+#' table(testData1$y, predicted_class_test)
+#' test_err = sum(testData1$y!=predicted_class_test)/sum(table(testData1$y==predicted_class_test))
+#' cat("test error :", test_err )
+
 #' @export
-rmpbart <-
-  function(Data,testData,Prior,Mcmc,seedvalue) 
+rmpbart =
+  function(x.train, y.train, x.test = NULL, Prior = NULL, Mcmc = NULL, seedvalue = NULL) 
   {
     
-    set.seed(seedvalue);
-    
-    p=Data$p
-    y=Data$y
-    X=Data$X
-    testX = testData$X
+if(is.na(seedvalue)){
+	seedvalue = 99
+} else {
+	set.seed(seedvalue)
+}
+
+XEx = NULL;
+for(i in 1:nrow(x.train)){
+XEx = rbind(XEx, matrix(rep(x.train[i,], p-1), byrow = TRUE, ncol = ncol(x.train) ) )
+}
+
+
+if(!is.na(x.test)){
+	testXEx = NULL;
+	for(i in 1:nrow(x.test)){
+	testXEx = rbind(testXEx, matrix(rep(x.test[i,], p-1), byrow = TRUE, ncol = ncol(x.test) ) )
+	}
+} else {
+	testXEx = 0
+}
+p = length(unique(y.train))
+
+Data = list(p=p,y=y.train,X= XEx)
+
+testData = list(p=p,X= testXEx)
+
+p=Data$p
+y=Data$y
+X=Data$X
+testX = testData$X
    
     
     levely=as.numeric(levels(as.factor(y)))
@@ -131,7 +169,7 @@ rmpbart <-
 	}
   
 	
-    res <-   .C("rmnpMDA",w=as.double(rep(0,nrow(X))),
+    res =   .C("rmnpMDA",w=as.double(rep(0,nrow(X))),
                trainx= as.double(t(X)), 
                testx= as.double(t(testX)),
                mu = as.double(rep(0,nrow(X))),
@@ -158,6 +196,20 @@ rmpbart <-
 				 minobsnode = as.integer(minobsnode),
                sigmasample = sigmasample,
 			   PACKAGE="mpbart")      
-class(res) <- "mpbart"
-return(res)
-  }
+
+class_prob_train = matrix(res$trainpred,ncol = p, byrow = TRUE)
+predicted_class_train = apply(class_prob_train,1,which.max)
+
+class_prob_test = matrix(res$testpred,ncol = p, byrow = TRUE)
+predicted_class_test = apply(class_prob_test,1,which.max)
+
+ret = list(class_prob_train = class_prob_train, 
+			predicted_class_train = predicted_class_train,
+			class_prob_test = class_prob_test, 
+			predicted_class_test = predicted_class_test);
+			
+			
+class(ret) = "mpbart"
+
+return(ret)
+}

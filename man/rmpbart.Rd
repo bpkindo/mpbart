@@ -4,12 +4,15 @@
 \alias{rmpbart}
 \title{Multinomial Probit Bayesian Additive Regression Trees}
 \usage{
-rmpbart(Data, testData, Prior, Mcmc, seedvalue)
+rmpbart(x.train, y.train, x.test = NULL, Prior = NULL, Mcmc = NULL,
+  seedvalue = NULL)
 }
 \arguments{
-\item{Data}{Training data list that includes the number of choices/classes p, the response y and predictors X: list(p, y, X)}
+\item{x.train}{Training data predictors.}
 
-\item{testData}{Testing data list that includes predictors denoted by X: list(X)}
+\item{y.train}{Training data observed classes.}
+
+\item{x.test}{Test data predictors.}
 
 \item{Prior}{List of Priors for MPBART: e.g., Prior = list(nu=p+2,  V= diag(p - 1), ntrees=200,  kfac=2.0,  pbd=1.0, pb=0.5 , beta = 2.0, alpha = 0.95, nc = 100, priorindep = 0,  minobsnode = 10)}
 
@@ -21,6 +24,7 @@ rmpbart(Data, testData, Prior, Mcmc, seedvalue)
 A function to implement multinomial probit regression via Bayesian Addition Regression Trees using partial marginal data augmentation.
 }
 \examples{
+
 set.seed(64)
 library(mpbart)
 p=3
@@ -36,8 +40,8 @@ X = data.frame(X)
 testX = testdata[,1:21] 
 testX = data.frame(testX)
 sigma0 = diag(p-1)
-burn = 100
-ndraws = 1000
+burn = 500
+ndraws = 1500
 
 Mcmc1=list(sigma0=sigma0, burn = burn, ndraws = ndraws)
 Prior1 = list(nu=p+2,
@@ -54,23 +58,34 @@ Prior1 = list(nu=p+2,
 
 
 
-XEx <- NULL;
-  for(i in 1:nrow(X)){
-    XEx <- rbind(XEx, matrix(rep(X[i,], p-1), byrow = TRUE, ncol = ncol(X) ) )
-  }
-  
-  testXEx <- NULL;
-  for(i in 1:nrow(testX)){
-    testXEx <- rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = TRUE, ncol = ncol(testX) ) )
-  }
-  
-  
-  Data1 = list(p=p,y=traindata$y,X= XEx)
-  
-  testData1 = list(p=p,y=testdata$y,X= testXEx)
-  
+XEx = NULL;
+for(i in 1:nrow(X)){
+  XEx = rbind(XEx, matrix(rep(X[i,], p-1), byrow = T, ncol = ncol(X) ) )
+}
 
- out=rmpbart(Data=Data1, testData = testData1, 
-             Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
+testXEx = NULL;
+for(i in 1:nrow(testX)){
+  testXEx = rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = T, ncol = ncol(testX) ) )
+}
+
+
+Data1 = list(p=p,y=traindata$y,X= XEx)
+
+testData1 = list(p=p,y=testdata$y,X= testXEx)
+
+out = rmpbart(Data=Data1, testData = testData1, 
+              Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
+
+class_prob_train = matrix(out$trainpred,ncol = p, byrow = T)
+predicted_class_train = apply(class_prob_train,1,which.max)
+table(Data1$y, predicted_class_train)
+table(Data1$y==predicted_class_train)/sum(table(Data1$y==predicted_class_train))
+
+class_prob_test = matrix(out$testpred,ncol = p, byrow = T)
+predicted_class_test = apply(class_prob_test,1,which.max)
+
+table(testData1$y, predicted_class_test)
+test_err = sum(testData1$y!=predicted_class_test)/sum(table(testData1$y==predicted_class_test))
+cat("test error :", test_err )
 }
 
