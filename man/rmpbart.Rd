@@ -20,4 +20,58 @@ rmpbart(Data, testData, Prior, Mcmc, seedvalue)
 \description{
 A function to implement multinomial probit regression via Bayesian Addition Regression Trees using partial marginal data augmentation.
 }
+\examples{
+set.seed(64)
+library(mpbart)
+p=3
+train_wave = mlbench.waveform(300)
+test_wave = mlbench.waveform(500)
+traindata = data.frame(train_wave$x, y = train_wave$classes) 
+testdata = data.frame(test_wave$x, y = test_wave$classes)
+n = nrow(traindata)
+testn = nrow(testdata)
+X = traindata[,1:21] 
+X = data.frame(X)
+
+testX = testdata[,1:21] 
+testX = data.frame(testX)
+sigma0 = diag(p-1)
+burn = 100
+ndraws = 1000
+
+Mcmc1=list(sigma0=sigma0, burn = burn, ndraws = ndraws)
+Prior1 = list(nu=p+2,
+              V=(p+2)*diag(p-1),
+              ntrees = 100, 
+              kfac = 2.0, 
+              pbd = 1.0, 
+              pb = 0.5, 
+              alpha = 0.99,  
+              beta =  2.0, 
+              nc = 200, 
+              priorindep = FALSE)
+
+
+
+
+XEx <- NULL;
+  for(i in 1:nrow(X)){
+    XEx <- rbind(XEx, matrix(rep(X[i,], p-1), byrow = TRUE, ncol = ncol(X) ) )
+  }
+  
+  testXEx <- NULL;
+  for(i in 1:nrow(testX)){
+    testXEx <- rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = TRUE, ncol = ncol(testX) ) )
+  }
+  
+  
+  Data1 = list(p=p,y=traindata$y,X= XEx)
+  
+  testData1 = list(p=p,y=testdata$y,X= testXEx)
+  
+
+ out=rmpbart(Data=Data1, testData = testData1, 
+             Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
+
+}
 

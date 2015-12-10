@@ -7,6 +7,60 @@
 #' @param Prior List of Priors for MPBART: e.g., Prior = list(nu=p+2,  V= diag(p - 1), ntrees=200,  kfac=2.0,  pbd=1.0, pb=0.5 , beta = 2.0, alpha = 0.95, nc = 100, priorindep = 0,  minobsnode = 10)
 #' @param Mcmc List of MCMC starting values, burn-in ...: e.g.,     list(sigma0 = diag(p - 1), keep = 1, burn = 100, ndraws = 1000, keep_sigma_draws=FALSE)
 #' @param seedvalue random seed value: e.g., seedvalue = 99
+#' @useDynLib mpbart
+#' @examples
+#' set.seed(64)
+#' library(mpbart)
+#' p=3
+#' train_wave = mlbench.waveform(300)
+#' test_wave = mlbench.waveform(500)
+#' traindata = data.frame(train_wave$x, y = train_wave$classes) 
+#' testdata = data.frame(test_wave$x, y = test_wave$classes)
+#' n = nrow(traindata)
+#' testn = nrow(testdata)
+#' X = traindata[,1:21] 
+#' X = data.frame(X)
+#' 
+#' testX = testdata[,1:21] 
+#' testX = data.frame(testX)
+#' sigma0 = diag(p-1)
+#' burn = 100
+#' ndraws = 1000
+#' 
+#' Mcmc1=list(sigma0=sigma0, burn = burn, ndraws = ndraws)
+#' Prior1 = list(nu=p+2,
+#'               V=(p+2)*diag(p-1),
+#'               ntrees = 100, 
+#'               kfac = 2.0, 
+#'               pbd = 1.0, 
+#'               pb = 0.5, 
+#'               alpha = 0.99,  
+#'               beta =  2.0, 
+#'               nc = 200, 
+#'               priorindep = FALSE)
+#' 
+#' 
+#' 
+#' 
+#' XEx <- NULL;
+#'   for(i in 1:nrow(X)){
+#'     XEx <- rbind(XEx, matrix(rep(X[i,], p-1), byrow = TRUE, ncol = ncol(X) ) )
+#'   }
+#'   
+#'   testXEx <- NULL;
+#'   for(i in 1:nrow(testX)){
+#'     testXEx <- rbind(testXEx, matrix(rep(testX[i,], p-1), byrow = TRUE, ncol = ncol(testX) ) )
+#'   }
+#'   
+#'   
+#'   Data1 = list(p=p,y=traindata$y,X= XEx)
+#'   
+#'   testData1 = list(p=p,y=testdata$y,X= testXEx)
+#'   
+#' 
+#'  out=rmpbart(Data=Data1, testData = testData1, 
+#'              Prior = Prior1, Mcmc=Mcmc1, seedvalue = 99)
+#' 
     
 
 rmpbart <-
@@ -79,7 +133,7 @@ rmpbart <-
 	}
   
 	
-    out <-   .C("mpbart",w=as.double(rep(0,nrow(X))),
+    res <-   .C("rmnpMDA",w=as.double(rep(0,nrow(X))),
                trainx= as.double(t(X)), 
                testx= as.double(t(testX)),
                mu = as.double(rep(0,nrow(X))),
@@ -102,10 +156,10 @@ rmpbart <-
                alpha = as.double(alpha),  
                beta =  as.double(beta),
                nc = as.integer(nc),
-			         savesigma = as.integer(savesigma),
-			         minobsnode = as.integer(minobsnode),
-               sigmasample = sigmasample 
-               )
-          
-    return(out)
+				 savesigma = as.integer(savesigma),
+				 minobsnode = as.integer(minobsnode),
+               sigmasample = sigmasample,
+			   PACKAGE="mpbart")      
+class(res) <- "mpbart"
+return(res)
   }
