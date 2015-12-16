@@ -62,7 +62,7 @@ rmpbart =
   function(x.train, y.train, x.test = NULL, Prior = NULL, Mcmc = NULL, seedvalue = NULL) 
   {
     
-if(is.na(seedvalue)){
+if(is.null(seedvalue)){
 	seedvalue = 99
 } else {
 	set.seed(seedvalue)
