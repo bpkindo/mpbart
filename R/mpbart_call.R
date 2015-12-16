@@ -101,10 +101,12 @@ print(table(as.integer(Data$y) ))
 #print(table(as.integer(Data$y) , model.response(mf)))
 
 n=length(Data$y)
+k=ncol(Data$X)
+
 pm1=p-1
 
 if (!is.null(test.data)){
-  testn <- nrow(testData$testXEx)/(p-1)
+  testn <- nrow(testData$X)/(p-1)
 } else {
   testn <- 0
 }
@@ -160,15 +162,15 @@ if( (priorindep ==TRUE) || (keep_sigma_draws==FALSE)){
 }
 
 
-res =   .C("rmnpMDA",w=as.double(rep(0,nrow(X))),
-           trainx= as.double(t(X)), 
-           testx= as.double(t(testX)),
-           mu = as.double(rep(0,nrow(X))),
+res =   .C("rmnpMDA",w=as.double(rep(0,nrow(Data$X))),
+           trainx= as.double(t(Data$X)), 
+           testx= as.double(t(testData$X)),
+           mu = as.double(rep(0,nrow(Data$X))),
            sigmai = as.double(sigmai),
            V = as.double(V),
-           n = as.integer(length(y)),
+           n = as.integer(length(Data$y)),
            n_dim = as.integer(ncol(sigmai)),
-           y = as.integer(y), 
+           y = as.integer(Data$y), 
            n_cov = as.integer(k), 
            nu = as.integer(nu), 
            trainpred = as.double(rep(0,p*n)) , 
