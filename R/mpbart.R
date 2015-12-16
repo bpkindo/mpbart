@@ -4,6 +4,8 @@ mpbart <- function(formula, train.data, test.data = NULL, base = NULL,
                    Prior = NULL, Mcmc = NULL, 
                    seedvalue = NULL)
 {
+#'Multinomial Probit Bayesian Additive Regression Trees
+#'Multinomial probit modeling using Bayesian Additive Regressino Trees
 #'@param formula choice ~ demographic covariates. If there are no, demographic variables use y ~ 1
 #'@param data Training Data in wide format
 #'@base Base choic. Default is the highest class/choice

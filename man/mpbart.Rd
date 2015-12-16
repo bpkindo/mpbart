@@ -2,6 +2,8 @@
 % Please edit documentation in R/mpbart.R
 \name{mpbart}
 \alias{mpbart}
+\title{Multinomial Probit Bayesian Additive Regression Trees
+Multinomial probit modeling using Bayesian Additive Regressino Trees}
 \usage{
 mpbart(formula, train.data, test.data = NULL, base = NULL, Prior = NULL,
   Mcmc = NULL, seedvalue = NULL)
@@ -10,5 +12,9 @@ mpbart(formula, train.data, test.data = NULL, base = NULL, Prior = NULL,
 \item{formula}{choice ~ demographic covariates. If there are no, demographic variables use y ~ 1}
 
 \item{data}{Training Data in wide format}
+}
+\description{
+Multinomial Probit Bayesian Additive Regression Trees
+Multinomial probit modeling using Bayesian Additive Regressino Trees
 }
 
