@@ -385,11 +385,24 @@ void dinv(std::vector<std::vector<double> >& X,
     F77_CALL(dpptri)("U", &size, pdInv, &errorM);
     if (errorM) {
       Rprintf("LAPACK dpptri failed, %d\n", errorM);
-      error("Exiting from dinv().\n");
+      
+	  for(int jj=0; jj<size;jj++){
+		for(int kk=0; kk<size;kk++){
+			cout << " matrix entry " << jj ", " << kk << " : " << X[jj][kk] << endl; 
+	  }
+	  }
+	  
+	  error("Exiting from dinv().\n");
+	  
     }
   }
   else {
     Rprintf("LAPACK dpptrf failed, %d\n", errorM);
+		  for(int jj=0; jj<size;jj++){
+		for(int kk=0; kk<size;kk++){
+			cout << " matrix entry " << jj ", " << kk << " : " << X[jj][kk] << endl; 
+	  }
+	  }
     error("Exiting from dinv().\n");
   }
   for (i = 0, j = 0; j < size; j++) {

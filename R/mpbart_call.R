@@ -7,9 +7,9 @@
 
 
 mpbart_call <- function(formula, data,base,test.data = NULL, 
-                        Prior = NULL, Mcmc = NULL)
+                        Prior = NULL, Mcmc = NULL, 
+                        varying = NULL, sep = '.')
 {
-  
 
 
 mf <- match.call(expand.dots = FALSE)
@@ -50,6 +50,10 @@ if (any(counts == 0)) {
 }
 Y <- as.numeric(unclass(Y)) - 1
 Y <- ifelse(Y==0, p,Y)
+
+cat("The base level is: '", lev[1], "'.\n\n", sep="") 
+
+relvelved <- c(lev[2:length(lev)], lev[1])
 
 Terms <- attr(mf, "terms")
 X <- model.matrix.default(Terms, mf)
@@ -96,12 +100,10 @@ testData = list(p=p,X= testXEx)
 
 
 cat("Table of y values",fill=TRUE)
-print(table(as.integer(Data$y) ))
+print(table(model.response(mf) ))
             
-#print(table(as.integer(Data$y) , model.response(mf)))
 
 n=length(Data$y)
-k=ncol(Data$X)
 
 pm1=p-1
 
@@ -111,8 +113,45 @@ if (!is.null(test.data)){
   testn <- 0
 }
 
-# X=createX(p,na=2,nd=NULL,Xa= traindata[,2:9],Xd=NULL, 
-#           INT = FALSE,DIFF=TRUE,base=p)
+
+
+
+
+#reading alternate specific variables
+if (!is.null(varying)) {
+  
+  varying.names <- names(data[,varying])
+  
+  alt.names <- NULL
+  for(vv in 1:(length(varying))){
+    alt.names <- c(alt.names, unlist(strsplit(varying.names[vv], sep, fixed = TRUE))[1L])
+  }
+    
+  alt.names <- unique(alt.names)
+  if(length(alt.names) != length(varying)/p){
+    stop("alternative variables names mismatch. Check names of alternative variables.")
+  }
+  
+  reordered_names <- NULL
+  for(nn in 1:(length(varying)/p)){
+    reordered_names <- c(reordered_names,  paste0(alt.names[nn], sep, relvelved) )
+  }
+  
+  XChSp <- createX(p,na=length(varying)/p ,
+                  nd=NULL,Xa= data[,reordered_names],Xd=NULL, 
+                  INT = FALSE,DIFF=TRUE,base=p)
+  
+  Data$X <- cbind(Data$X, XChSp) 
+  
+  if (!is.null(test.data)){  
+  testXChSp = createX(p,na=length(varying)/p ,
+                  nd=NULL,Xa= test.data[,reordered_names],Xd=NULL, 
+                  INT = FALSE,DIFF=TRUE,base=p)  
+  testData$X <- cbind(testData$X, testXChSp)
+  }
+}
+
+
 
 
 if(missing(Prior)) 
@@ -171,7 +210,7 @@ res =   .C("rmnpMDA",w=as.double(rep(0,nrow(Data$X))),
            n = as.integer(length(Data$y)),
            n_dim = as.integer(ncol(sigmai)),
            y = as.integer(Data$y), 
-           n_cov = as.integer(k), 
+           n_cov = as.integer(ncol(Data$X)), 
            nu = as.integer(nu), 
            trainpred = as.double(rep(0,p*n)) , 
            testn = as.integer(testn), 
@@ -191,7 +230,34 @@ res =   .C("rmnpMDA",w=as.double(rep(0,nrow(Data$X))),
            PACKAGE="mpbart")      
 
 
+class_prob_train <- matrix(res$trainpred,ncol = p, byrow = TRUE)
+class_prob_train <- data.frame(class_prob_train)
+names(class_prob_train) <- relvelved
 
-return(list(out = res))
+predicted_class_train <- apply(class_prob_train,1,function(x) relvelved[which.max(x)] )
+predicted_class_train <- as.factor(predicted_class_train)
 
+if (!is.null(test.data)){
+  class_prob_test <- matrix(res$testpred,ncol = p, byrow = TRUE)
+  class_prob_test <- data.frame(class_prob_test)
+  names(class_prob_test) <- relvelved
+  predicted_class_test <- apply(class_prob_test,1,function(x) relvelved[which.max(x)] )
+  predicted_class_test <- as.factor(predicted_class_test)
+  
+} else {
+  class_prob_test <- NULL
+  predicted_class_test <- NULL
+}
+
+ret = list(class_prob_train = class_prob_train, 
+           predicted_class_train = predicted_class_train,
+           class_prob_test = class_prob_test, 
+           predicted_class_test = predicted_class_test, 
+           sigmasample = sigmasample);
+
+
+
+class(ret) = "mpbart"
+
+return(ret)
 }
