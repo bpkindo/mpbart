@@ -2,19 +2,36 @@
 % Please edit documentation in R/mpbart.R
 \name{mpbart}
 \alias{mpbart}
-\title{Multinomial Probit Bayesian Additive Regression Trees
-Multinomial probit modeling using Bayesian Additive Regressino Trees}
+\title{Multinomial Probit Bayesian Additive Regression Trees,
+Multinomial probit modeling using Bayesian Additive Regressino Trees,}
 \usage{
-mpbart(formula, train.data, test.data = NULL, base = NULL, Prior = NULL,
-  Mcmc = NULL, seedvalue = NULL)
+mpbart(formula, train.data, test.data = NULL, base = NULL, varying = NULL,
+  sep = ".", Prior = NULL, Mcmc = NULL, seedvalue = NULL)
 }
 \arguments{
-\item{formula}{choice ~ demographic covariates. If there are no, demographic variables use y ~ 1}
+\item{formula}{choice ~ demographic covariates. If there are no, demographic variables use y ~ 1,}
 
-\item{data}{Training Data in wide format}
+\item{train.data}{Training Data in wide format,}
+
+\item{test.data}{Test Data in wide format, typically without the response,}
+
+\item{base}{Base choic. Default is the highest class/choice,}
+
+\item{varying}{the indexes of the variables that are alternative specific,}
+
+\item{sep}{the seperator of the variable name and the alternative name,}
+
+\item{Prior}{List of Priors for MPBART: e.g., Prior = list(nu=p+2,  V= diag(p - 1), ntrees=200,  kfac=2.0,  pbd=1.0, pb=0.5 , beta = 2.0, alpha = 0.95, nc = 100, priorindep = 0,  minobsnode = 10)}
+
+\item{Mcmc}{List of MCMC starting values, burn-in ...: e.g.,     list(sigma0 = diag(p - 1), keep = 1, burn = 100, ndraws = 1000, keep_sigma_draws=FALSE)}
+
+\item{seedvalue}{random seed value, default of 99 will be used if null}
+}
+\value{
+sigmasample samples of the latent variable covariance matrix.
 }
 \description{
-Multinomial Probit Bayesian Additive Regression Trees
-Multinomial probit modeling using Bayesian Additive Regressino Trees
+Multinomial Probit Bayesian Additive Regression Trees,
+Multinomial probit modeling using Bayesian Additive Regressino Trees,
 }
 

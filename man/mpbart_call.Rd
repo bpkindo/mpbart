@@ -5,7 +5,7 @@
 \title{Multinomial Probit Bayesian Additive Regression Trees}
 \usage{
 mpbart_call(formula, data, base, test.data = NULL, Prior = NULL,
-  Mcmc = NULL)
+  Mcmc = NULL, varying = NULL, sep = ".")
 }
 \description{
 A function to implement multinomial probit regression via Bayesian Addition Regression Trees using partial marginal data augmentation.

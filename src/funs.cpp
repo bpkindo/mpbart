@@ -388,7 +388,7 @@ void dinv(std::vector<std::vector<double> >& X,
       
 	  for(int jj=0; jj<size;jj++){
 		for(int kk=0; kk<size;kk++){
-			cout << " matrix entry " << jj ", " << kk << " : " << X[jj][kk] << endl; 
+			cout << " matrix entry " << jj << ", " << kk << " : " << X[jj][kk] << endl; 
 	  }
 	  }
 	  
@@ -400,7 +400,7 @@ void dinv(std::vector<std::vector<double> >& X,
     Rprintf("LAPACK dpptrf failed, %d\n", errorM);
 		  for(int jj=0; jj<size;jj++){
 		for(int kk=0; kk<size;kk++){
-			cout << " matrix entry " << jj ", " << kk << " : " << X[jj][kk] << endl; 
+			cout << " matrix entry " << jj << ", " << kk << " : " << X[jj][kk] << endl; 
 	  }
 	  }
     error("Exiting from dinv().\n");

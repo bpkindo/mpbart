@@ -61,7 +61,7 @@ X <- model.matrix.default(Terms, mf)
 xcolnames <- colnames(X)
 xcolnames <- xcolnames[-1]
 
-if(length(xcolnames) ==1 ){
+if(length(xcolnames) == 1 ){
   X <- data.frame(X[,xcolnames])
   names(X) <- xcolnames[1]
   
@@ -71,7 +71,7 @@ if(length(xcolnames) ==1 ){
 }
 if (!is.null(test.data)){
   
-  if(length(xcolnames) ==1 ){
+  if(length(xcolnames) == 1 ){
     Xtest <- data.frame(test.data[,xcolnames])
     names(Xtest) <- xcolnames[1]
   } else {
@@ -149,6 +149,7 @@ if (!is.null(varying)) {
                   INT = FALSE,DIFF=TRUE,base=p)  
   testData$X <- cbind(testData$X, testXChSp)
   }
+  
 }
 
 
@@ -252,8 +253,7 @@ if (!is.null(test.data)){
 ret = list(class_prob_train = class_prob_train, 
            predicted_class_train = predicted_class_train,
            class_prob_test = class_prob_test, 
-           predicted_class_test = predicted_class_test, 
-           sigmasample = sigmasample);
+           predicted_class_test = predicted_class_test);
 
 
 
