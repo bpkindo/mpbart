@@ -2,8 +2,7 @@
 % Please edit documentation in R/mpbart.R
 \name{mpbart}
 \alias{mpbart}
-\title{Multinomial Probit Bayesian Additive Regression Trees,
-Multinomial probit modeling using Bayesian Additive Regressino Trees,}
+\title{Multinomial Probit Bayesian Additive Regression Trees}
 \usage{
 mpbart(formula, train.data, test.data = NULL, base = NULL, varying = NULL,
   sep = ".", Prior = NULL, Mcmc = NULL, seedvalue = NULL)
@@ -25,13 +24,20 @@ mpbart(formula, train.data, test.data = NULL, base = NULL, varying = NULL,
 
 \item{Mcmc}{List of MCMC starting values, burn-in ...: e.g.,     list(sigma0 = diag(p - 1), keep = 1, burn = 100, ndraws = 1000, keep_sigma_draws=FALSE)}
 
-\item{seedvalue}{random seed value, default of 99 will be used if null}
+\item{seedvalue}{random seed value, default of 99 will be used if null,}
 }
 \value{
-sigmasample samples of the latent variable covariance matrix.
+class_prob_train training data choice/class probabilities,
+
+predicted_class_train training data predicted choices/classes,
+
+class_prob_test test data choice/class probabilities,
+
+predicted_class_test test data predicted choices/classes,
+
+sigmasample posterior samples of the latent variable covariance matrix.
 }
 \description{
-Multinomial Probit Bayesian Additive Regression Trees,
-Multinomial probit modeling using Bayesian Additive Regressino Trees,
+Multinomial probit modeling using Bayesian Additive Regression Trees,
 }
 
