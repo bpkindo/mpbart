@@ -254,7 +254,7 @@ ret = list(class_prob_train = class_prob_train,
            predicted_class_train = predicted_class_train,
            class_prob_test = class_prob_test, 
            predicted_class_test = predicted_class_test, 
-           sigmasample = ret$sigmasample);
+           sigmasample = res$sigmasample);
 
 
 
