@@ -6,21 +6,28 @@
 #' @export
 
 
-mpbart_call <- function(formula, data,base,test.data = NULL, 
+mpbart_call <- function(formula, data, base = NULL,test.data = NULL, 
                         Prior = NULL, Mcmc = NULL, 
                         varying = NULL, sep = '.')
 {
 
-
-mf <- match.call(expand.dots = FALSE)
-m <- match(c("formula", "data"), names(mf), 0L)
-mf <- mf[c(1L, m)]
-mf[[1L]] <- as.name("model.frame")
-mf <- eval(mf, parent.frame())
-
-Y <- model.response(mf)
-
-Y <- as.factor(Y)
+  callT <- match.call(expand.dots = TRUE)
+  callF <- match.call(expand.dots = FALSE)
+  formula <- callF$formula <- mFormula(formula)
+  nframe <- length(sys.calls())
+  
+  response.name <- paste(deparse(attr(formula, "lhs")[[1L]]))
+  m <- match(c("formula", "data"), names(callT), 0L)
+  mf <- callT
+  mf <- mf[c(1L, m)]
+  
+  mf$formula <- formula
+  attr(mf$formula, "rhs") <- attr(formula,"rhs")[[2L]]
+  
+  mf[[1L]] <- as.name("model.frame")
+  mf <- eval(mf, parent.frame())
+  Y <- model.response(mf)
+  Y <- as.factor(Y)
 lev <- levels(Y)
 p <- length(lev)
 if (p < 3){
@@ -56,7 +63,9 @@ cat("The base level is: '", lev[1], "'.\n\n", sep="")
 relvelved <- c(lev[2:length(lev)], lev[1])
 
 Terms <- attr(mf, "terms")
+
 X <- model.matrix.default(Terms, mf)
+
 
 xcolnames <- colnames(X)
 xcolnames <- xcolnames[-1]
@@ -126,8 +135,12 @@ if (!is.null(varying)) {
   for(vv in 1:(length(varying))){
     alt.names <- c(alt.names, unlist(strsplit(varying.names[vv], sep, fixed = TRUE))[1L])
   }
-    
-  alt.names <- unique(alt.names)
+  
+  
+
+ alt.names <- unique(alt.names)
+
+
   if(length(alt.names) != length(varying)/p){
     stop("alternative variables names mismatch. Check names of alternative variables.")
   }

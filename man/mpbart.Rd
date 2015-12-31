@@ -8,7 +8,7 @@ mpbart(formula, train.data, test.data = NULL, base = NULL, varying = NULL,
   sep = ".", Prior = NULL, Mcmc = NULL, seedvalue = NULL)
 }
 \arguments{
-\item{formula}{choice ~ demographic covariates. If there are no, demographic variables use y ~ 1,}
+\item{formula}{choice ~ demographic covariates. If there are no, demographic variables use  ~ 1,}
 
 \item{train.data}{Training Data in wide format,}
 
