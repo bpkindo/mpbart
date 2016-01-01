@@ -4,7 +4,7 @@
 \alias{mpbart_call}
 \title{Multinomial Probit Bayesian Additive Regression Trees}
 \usage{
-mpbart_call(formula, data, base, test.data = NULL, Prior = NULL,
+mpbart_call(formula, data, base = NULL, test.data = NULL, Prior = NULL,
   Mcmc = NULL, varying = NULL, sep = ".")
 }
 \description{
