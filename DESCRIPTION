@@ -5,7 +5,7 @@ Authors@R: person("Bereket", "Kindo", email = "bpkindo@gmail.com.com", role = c(
 Description: This Package implements multinomial probit model using Bayesian
     Additive Regression Trees.
 Depends:
-    R (>= 3.2.2), mlbench, bayesm
+    R (>= 3.2.2), mlbench, bayesm, cvTools, mlogit
 License: GPL (>= 2)
 LazyData: true
 RoxygenNote: 5.0.1
