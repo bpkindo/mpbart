@@ -46,6 +46,60 @@ mpbart <- function(formula, train.data, test.data = NULL, base = NULL,
 #'\item  predicted_class_test: test data predicted choices/classes,
 #'\item  sigmasample: posterior samples of the latent variable covariance matrix.
 #'}
+#'@examples
+#' 
+#' \donotrun{library(mpbart)}
+#' set.seed(9)
+#' data(Fishing)
+#' 
+#' table(Fishing$mode)
+#' folds = cvFolds(n = nrow(Fishing), K = 10, R = 1,
+#'                 type = "random");
+#' Fishing$fold = sample(folds$which)
+#' Fishing$logincome = log(Fishing$income)
+#' 
+#' FishingTrain <- Fishing[Fishing$fold != 1,]
+#' FishingTest <- Fishing[Fishing$fold == 1,]
+#' 
+#' burn <- 100
+#' ndraws <- 1000
+#' p = 4 
+#' #'four choices
+#' sigma0 <- diag(p-1)
+#' 
+#' 
+#' Mcmc1 <- list(sigma0=sigma0, burn = burn, ndraws = ndraws)
+#' Prior1 <- list( nu=p-1,
+#'                 V = .5*diag(p-1),
+#'                 ntrees = 50, 
+#'                 kfac = 3.0, 
+#'                 pbd = 1.0, 
+#'                 pb = 0.5, 
+#'                 alpha = 0.95,  
+#'                 beta =  3.0, 
+#'                 nc = 100, 
+#'                 priorindep = FALSE, 
+#'                 minobsnode = 10)
+#' 
+#' 
+#' 
+#' out <- mpbart(as.factor(mode) ~ price + catch | logincome,
+#'     train.data =  FishingTrain, 
+#'     test.data =  FishingTest,
+#'     base = 'boat', 
+#'     varying = 2:9,
+#'     sep = ".",
+#'     Prior = Prior1, 
+#'     Mcmc = Mcmc1, 
+#'     seedvalue = 99)
+#' 
+#' table(as.character(FishingTrain$mode), as.character(out$predicted_class_train))
+#' 
+#' table(as.character(FishingTest$mode), as.character(out$predicted_class_test))
+#' 
+#' test_err <- sum(as.character(FishingTest$mode) != as.character(out$predicted_class_test))/length(FishingTest$mode)
+#' cat("test error :", test_err )
+#' 
 #'@export
 
 

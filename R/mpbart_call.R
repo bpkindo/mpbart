@@ -22,7 +22,7 @@ mpbart_call <- function(formula, data, base = NULL,test.data = NULL,
   mf <- mf[c(1L, m)]
   
   mf$formula <- formula
-  attr(mf$formula, "rhs") <- attr(formula,"rhs")[[2L]]
+  attr(mf$formula, "rhs") <- attr(formula,"rhs")[2L]
   
   mf[[1L]] <- as.name("model.frame")
   mf <- eval(mf, parent.frame())
