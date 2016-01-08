@@ -1,9 +1,5 @@
-#' Multinomial Probit Bayesian Additive Regression Trees
-#'
-#' A function to implement multinomial probit regression via Bayesian Addition Regression Trees using partial marginal data augmentation.
-#'
 #' @useDynLib mpbart
-#' @export
+
 
 
 mpbart_call <- function(formula, data, base = NULL,test.data = NULL, 
