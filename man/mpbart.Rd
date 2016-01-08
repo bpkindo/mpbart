@@ -179,6 +179,9 @@ test_err <- sum(testdata$y != out$predicted_class_test)/
   sum(table(testdata$y == out$predicted_class_test))
 
 cat("test error :", test_err )
+<<<<<<< HEAD
 \dontrun{END}
+=======
+>>>>>>> 3ddb554af7cdcd0b73437f51077363ffbb37f655
 }
 

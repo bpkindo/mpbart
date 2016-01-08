@@ -165,7 +165,10 @@ mpbart <- function(formula, train.data, test.data = NULL, base = NULL,
 #'   sum(table(testdata$y == out$predicted_class_test))
 #' 
 #' cat("test error :", test_err )
+<<<<<<< HEAD
 #' \dontrun{END}
+=======
+>>>>>>> 3ddb554af7cdcd0b73437f51077363ffbb37f655
 #'@export
 
 
