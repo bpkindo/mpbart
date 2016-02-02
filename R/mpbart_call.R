@@ -1,7 +1,6 @@
 #' @useDynLib mpbart
 
 
-
 mpbart_call <- function(formula, data, base = NULL,test.data = NULL, 
                         Prior = NULL, Mcmc = NULL, 
                         varying = NULL, sep = '.')

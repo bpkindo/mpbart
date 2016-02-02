@@ -91,7 +91,6 @@ public:
    size_t treesize() const; //number of nodes in tree
    size_t nnogs() const;    //number of nog nodes (no grandchildren nodes)
    size_t nbots() const;    //number of bottom nodes
-   void pr(bool pc=true) const; //to screen, pc is "print children"
    //birth death using nid----------
    bool birth(size_t nid,size_t v, size_t c, double ml, double mr); 
    bool death(size_t nid, double mu); 

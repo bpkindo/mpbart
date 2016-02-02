@@ -251,38 +251,6 @@ void tree::deathp(tree_p nb, double mu)
    nb->c=0;
    nb->mu=mu;
 }
-//--------------------
-//print out tree(pc=true) or node(pc=false) information
-//uses recursion down
-void tree::pr(bool pc) const
-{
-   size_t d = depth();
-   size_t id = nid();
-
-   size_t pid; 
-   if(!p) pid=0; //parent of top node
-   else pid = p->nid();
-
-   string pad(2*d,' ');
-   string sp(", ");
-   if(pc && (ntype()=='t')) 
-      cout << "tree size: " << treesize() << endl;
-   //cout << pad << "(id,parent): " << id << sp << pid;
-   cout << pad << "id: " << id;
-   cout << sp << "(v,c): " << v << sp << c;
-   cout << sp << "mu: " << mu; 
-   cout << sp << "type: " << ntype();
-   cout << sp << "depth: " << depth();
-   //cout << sp << "pointer: " << this << endl;
-   cout << endl;
-
-   if(pc) {
-      if(l) {
-         l->pr(pc);
-         r->pr(pc);
-      }
-   }
-}
 	//--------------------------------------------------
 	//private functions
 	//--------------------
