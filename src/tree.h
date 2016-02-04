@@ -130,10 +130,6 @@ public:
    void birthp(tree_p np,size_t v, size_t c, double ml, double mr); 
    void deathp(tree_p nb, double mu); //kill children of nog node nb 
 };
-std::istream& operator>>(std::istream&, tree&);
-std::ostream& operator<<(std::ostream&, const tree&);
-std::istream& operator>>(std::istream&, xinfo&);
-std::ostream& operator<<(std::ostream&, const xinfo&);
 
 
 #endif
