@@ -1,18 +1,12 @@
 #include <iostream>
-
-
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
-
-
 #include "info.h"
 #include "tree.h"
 #include "bd.h"
 #include "funs.h"
 
-using std::cout;
-using std::endl;
 
 /*
 notation: (as in old code): going from state x to state y (eg, incoming tree is x).
@@ -139,10 +133,7 @@ GetRNGstate();
          yb = sr.sy/sr.n;
          b = sr.n/s2; // b=n/sigma^2
          mur = b*yb/(a+b) + norm_rand()/sqrt(a+b);
-         //do birth
-//cout << "birth, mul=" << mul << " mur=" << mur << endl;
-         //x.birthp(nx,v,c,mul,mur);
-			x.birth(nx->nid(),v,c,mul,mur);
+   		x.birth(nx->nid(),v,c,mul,mur);
          return true;
       } else {
          return false;
@@ -201,24 +192,6 @@ GetRNGstate();
       double alpha2 = alpha1*exp(lilt - lill - lilr);
       double alpha = std::min(1.0,alpha2);
 
-	  /*
-      cout << "death prop: " << nx->nid() << endl;
-      cout << "nognds.size(), ni, nx: " << nognds.size() << ", " << ni << ", " << nx << endl;
-      cout << "depth of nog node: " << dny << endl;
-      cout << "PGny: " << PGny << endl;
-      cout << "PGlx: " << PGlx << endl;
-      cout << "PGrx: " << PGrx << endl;
-      cout << "PBy: " << PBy << endl;
-      cout << "Pboty: " << Pboty << endl;
-      cout << "PDx: " << PDx << endl;
-      cout << "Pnogx: " << Pnogx << endl;
-      cout << "left ss: " << sl.n << ", " << sl.sy << ", " << sl.sy2 << endl;
-      cout << "right ss: " << sr.n << ", " << sr.sy << ", " << sr.sy2 << endl;
-      cout << "lill, lilr, lilt: " << lill << ", " << lilr << ", " << lilt << endl;
-      cout << "sigma: " << pi.sigma << endl;
-      cout << "tau: " << pi.tau << endl;
-      cout << "alphas: " << alpha1 << ", " << alpha2 << ", " << alpha << endl;
-      */
 
       //--------------------------------------------------
       //finally ready to try metrop
@@ -234,8 +207,6 @@ GetRNGstate();
          b = n/s2; // b=n/sigma^2
          mu = b*yb/(a+b) + norm_rand()/sqrt(a+b);
          //do death
-//cout << "death, mu=" << mu << endl;
-         //x.deathp(nx,mu);
 			x.death(nx->nid(),mu);
          return true;
       } else {

@@ -2,13 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <map>
-
-
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
-
-
 #include "tree.h"
 #include "info.h"
 #include "bd.h"
@@ -177,7 +173,6 @@ for(size_t i=0; i<di.n_samp; i++){
 		condmom(tempres,tempmean,sigmai,(int)di.n_dim,(int)(k+1),&mean,&csig);
 		r[k][i] = tempres[k]- mean + tempmean[k];
 		if(i==0) condsig[k] = csig;
-		//cout << "conditional mean, var: " << mean << ", " << csig << endl;
 	}
 
 }
@@ -385,7 +380,7 @@ void dinv(std::vector<std::vector<double> >& X,
       
 	  for(int jj=0; jj<size;jj++){
 		for(int kk=0; kk<size;kk++){
-			cout << " matrix entry " << jj << ", " << kk << " : " << X[jj][kk] << endl; 
+		
 	  }
 	  }
 	  
@@ -397,7 +392,7 @@ void dinv(std::vector<std::vector<double> >& X,
     Rprintf("LAPACK dpptrf failed, %d\n", errorM);
 		  for(int jj=0; jj<size;jj++){
 		for(int kk=0; kk<size;kk++){
-			cout << " matrix entry " << jj << ", " << kk << " : " << X[jj][kk] << endl; 
+			
 	  }
 	  }
     error("Exiting from dinv().\n");
