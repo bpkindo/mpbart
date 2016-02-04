@@ -3,15 +3,13 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <vector>
-#include <ctime>
-#include <algorithm>
-#include <math.h>
 
-extern "C" {
+#include <algorithm>
+
+
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
-};
 
 #include "funs.h"
 #include "tree.h"

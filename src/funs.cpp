@@ -3,11 +3,10 @@
 #include <string.h>
 #include <map>
 
-extern "C" {
+
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
-};
 
 
 #include "tree.h"

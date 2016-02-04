@@ -2,11 +2,10 @@
 #include "tree.h"
 #include "info.h"
 
-extern "C" {
+
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
-};
 
 
 

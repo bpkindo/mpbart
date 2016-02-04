@@ -1,10 +1,10 @@
 #include <iostream>
 
-extern "C" {
+
 #include <R.h>
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
-};
+
 
 #include "info.h"
 #include "tree.h"
