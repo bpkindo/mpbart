@@ -2,10 +2,10 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <math.h>
 #include <vector>
 #include <ctime>
 #include <algorithm>
+#include <math.h>
 
 extern "C" {
 #include <R.h>
@@ -268,7 +268,7 @@ alpha2=ss/(double)rchisq((double)nu*di.n_dim);
 
 for(size_t k=0; k<di.n_dim; k++){
 	for(size_t i=0;i<di.n_samp;i++) {
-		wtilde[k][i] = std::sqrt(alpha2) * (w[i*di.n_dim + k]);
+		wtilde[k][i] = sqrt(alpha2) * (w[i*di.n_dim + k]);
 	}
 }
 
@@ -339,8 +339,8 @@ for(size_t j=0; j< di.n_dim; j++) alpha2 += (WishSampleTilde[j][j])/double(di.n_
 for(size_t i=0; i<di.n_samp; i++){
 	for(size_t k=0; k < di.n_dim; k++){
 	
-		mu[i*di.n_dim + k] = allfit[k][i]/std::sqrt(alpha2); //divide allfit this to transform
-		w[i*di.n_dim +k] = allfit[k][i]/std::sqrt(alpha2old) + (wtilde[k][i]-allfit[k][i]) /std::sqrt(alpha2) ; 
+		mu[i*di.n_dim + k] = allfit[k][i]/sqrt(alpha2); //divide allfit this to transform
+		w[i*di.n_dim +k] = allfit[k][i]/sqrt(alpha2old) + (wtilde[k][i]-allfit[k][i]) /sqrt(alpha2) ; 
 	}
 }
 

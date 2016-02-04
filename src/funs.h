@@ -1,4 +1,3 @@
-#include <cmath>
 #include <iostream>
 #include "tree.h"
 #include "info.h"

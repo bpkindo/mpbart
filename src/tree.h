@@ -2,7 +2,6 @@
 #define GUARD_tree_h
 
 #include <iostream>
-#include <cmath>
 #include <cstddef>
 #include <vector>
 
