@@ -28,8 +28,8 @@ A function to implement multinomial probit regression via Bayesian Addition Regr
 set.seed(64)
 library(mpbart)
 p=3
-train_wave = mlbench.waveform(300)
-test_wave = mlbench.waveform(500)
+train_wave = mlbench.waveform(50)
+test_wave = mlbench.waveform(100)
 traindata = data.frame(train_wave$x, y = train_wave$classes) 
 testdata = data.frame(test_wave$x, y = test_wave$classes)
 
@@ -40,12 +40,12 @@ y.train = train_wave$classes
 
 sigma0 = diag(p-1)
 burn = 100
-ndraws = 1000
+ndraws = 200 # a higher number >=1000 is more appropriate.
 
 Mcmc1=list(sigma0=sigma0, burn = burn, ndraws = ndraws)
 Prior1 = list(nu=p+2,
               V=(p+2)*diag(p-1),
-              ntrees = 100, 
+              ntrees = 5, #typically 200 trees is good 
               kfac = 2.0, 
               pbd = 1.0, 
               pb = 0.5, 

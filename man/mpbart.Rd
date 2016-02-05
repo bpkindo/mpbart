@@ -69,7 +69,7 @@ sigma0 <- diag(p-1)
 Mcmc1 <- list(sigma0=sigma0, burn = burn, ndraws = ndraws)
 Prior1 <- list( nu=p-1,
                 V = .5*diag(p-1),
-                ntrees = 50, 
+                ntrees = 5, # ntrees >= 50 is probably more appropriate
                 kfac = 3.0, 
                 pbd = 1.0, 
                 pb = 0.5, 
