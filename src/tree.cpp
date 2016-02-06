@@ -8,9 +8,6 @@
 #include <Rmath.h>
 #include <R_ext/Lapack.h>
 using std::string;
-using std::cout;
-using std::endl;
-
 //--------------------------------------------------
 // constructors
 tree::tree(): mu(0.0),v(0),c(0),p(0),l(0),r(0) {}
@@ -168,11 +165,11 @@ bool tree::birth(size_t nid,size_t v, size_t c, double ml, double mr)
 {
    tree_p np = getptr(nid);
    if(np==0) {
-      cout << "error in birth: bottom node not found\n";
+	  error("error in birth: bottom node not found\n");
       return false; //did not find note with that nid
    }
    if(np->l) {
-      cout << "error in birth: found node has children\n";
+      error("error in birth: found node has children\n");
       return false; //node is not a bottom node
    }
 
@@ -207,7 +204,7 @@ bool tree::death(size_t nid, double mu)
 {
    tree_p nb = getptr(nid);
    if(nb==0) {
-      cout << "error in death, nid invalid\n";
+      error("error in death, nid invalid\n");
       return false;
    }
    if(nb->isnog()) {
@@ -220,7 +217,7 @@ bool tree::death(size_t nid, double mu)
       nb->mu=mu;
       return true;
    } else {
-      cout << "error in death, node is not a nog node\n";
+      error("error in death, node is not a nog node\n");
       return false;
    }
 }
@@ -259,7 +256,7 @@ void tree::deathp(tree_p nb, double mu)
 	//recursion down
 	{
 	   if(n->l) {
-		  cout << "cp:error node has children\n";
+		  error("cp:error node has children\n");
 		  return;
 	   }
 

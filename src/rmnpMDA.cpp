@@ -37,10 +37,6 @@ void rmnpMDA(double *w, double  *pX, double *testpX, double *mu, double *sigmai,
 //     *y is multinomial 1,..., (n_dim + 1)
 //  *sigmai is (n_dim) x (n_dim) 
 
-cout << "Number of trees: " << *pntrees << endl;
-cout << "draws, burn: " << *pndraws << ", " << *pburn << endl;
-
-cout << "Training and Test sample sizes: " << *pn << ", " << *testn << endl;
 
 dinfo di; dinfo dip;
 di.n_samp = *pn; di.n_cov = *pn_cov; di.n_dim = *pn_dim;
@@ -227,15 +223,16 @@ for(size_t j=0;j<di.n_dim;j++){
 double alpha2, alpha2old, ss;
 int sigdrawcounter = 0;
 //MCMC
-cout << "\nMCMC:\n";
+
+
+//cout << "\nMCMC:\n";
 time_t tp;
 int time1 = time(&tp);
 
 for(size_t loop=0;loop<(nd+burn);loop++) {
 
 
-if(loop%100==0) cout << "iteration: " << loop << " of " << nd+burn << endl;
-
+if(loop%100==0) Rprintf("iteration: %d of %d \n",loop, nd+burn);
 
 
 draww(w, mu, sigmai, &nn,&nndim,y);
@@ -418,7 +415,7 @@ if(loop>=burn){
 } //end of loop
 
 int time2 = time(&tp);
-cout << "time for mcmc loop: " << time2-time1 << " secs"<< endl;
+Rprintf("time for mcmc loop %d secs", time2-time1);
 
 std::vector<size_t> temp_vec;
 temp_vec.resize(nd-burn);

@@ -118,9 +118,6 @@ if (!is.null(test.data)){
 }
 
 
-
-
-
 #reading alternate specific variables
 if (!is.null(varying)) {
   
@@ -208,6 +205,11 @@ if( (priorindep ==TRUE) || (keep_sigma_draws==FALSE)){
   sigmasample = as.double(rep(sigma0, ndraws+burn));
   savesigma = 1;
 }
+
+cat("Number of trees: ", ntrees, "'.\n\n", sep="") 
+cat("Number of draws: ", ndraws, "'.\n\n", sep="") 
+cat("burn-in: ", burn, "'.\n\n", sep="") 
+
 
 
 res =   .C("rmnpMDA",w=as.double(rep(0,nrow(Data$X))),
