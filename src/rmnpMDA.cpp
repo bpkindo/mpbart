@@ -56,7 +56,7 @@ draww(w, mu, sigmai, &nn,&nndim,y);
 
 std::vector<size_t> unqytrn;
 double maxy;
-maxy = -INFINITY;
+maxy = R_NegInf;
 for(size_t i=0; i<di.n_samp;i++){
 	unqytrn.push_back(y[i]);
 	if(maxy<y[i]) maxy = y[i];
@@ -348,7 +348,7 @@ for(size_t i=0; i<di.n_samp; i++){
 if(loop>=burn){
 	dinv(SigmaTmpInv ,di.n_dim,SigmaTmp);
 	 for(size_t k = 0; k <di.n_samp; k++){
-		max_temp = -INFINITY;
+		max_temp = R_NegInf;
 		for(size_t l=0; l<di.n_dim; l++){
 			mvnmean[l] = allfit[l][k];
 		}
@@ -385,7 +385,7 @@ if(loop>=burn){
 		}
 		
 		for(size_t k = 0; k <dip.n_samp; k++){
-			max_temp = -INFINITY;
+			max_temp = R_NegInf;
 			
 			for(size_t l=0; l<di.n_dim; l++){
 				mvnmean[l] = ppredmeanvec[l][k];
