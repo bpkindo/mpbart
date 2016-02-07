@@ -93,8 +93,8 @@ void getcutpoints(int nc, int n_cov, int n_samp,
    double xx;
 
 
-   std::vector<double> minx(n_cov,INFINITY); // to store the minimum of each of the individual specific pred
-   std::vector<double> maxx(n_cov,-INFINITY);// to store the max of each of the individual specific pred
+   std::vector<double> minx(n_cov,R_PosInf); // to store the minimum of each of the individual specific pred
+   std::vector<double> maxx(n_cov,R_NegInf);// to store the max of each of the individual specific pred
 
       for(int j=0;j<n_cov;j++) {
       for(int i=0;i<n_samp;i++) {
