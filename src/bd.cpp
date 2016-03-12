@@ -1,15 +1,13 @@
 #include <iostream>
 #include <R.h>
 #include <Rmath.h>
-#include <R_ext/Lapack.h>
+#include "bd.h"
 #include "info.h"
 #include "tree.h"
-#include "bd.h"
 #include "funs.h"
 
 
 /*
-notation: (as in old code): going from state x to state y (eg, incoming tree is x).
 
 note: rather than have x and making a tree y
 we just figure out what we need from x, the drawn bottom node,the drawn (v,c).
@@ -49,22 +47,21 @@ GetRNGstate();
 
       double Pbotx = 1.0/goodbots.size(); //proposal prob of choosing nx
       size_t dnx = nx->depth();
-      double PGnx = pi.alpha/pow(1.0 + dnx,pi.beta); //prior prob of growing at nx
-
+      double PGnx = pi.alpha/pow(1.0 + dnx,pi.betap); //prior prob of growing at nx
       double PGly, PGry; //prior probs of growing at new children (l and r) of proposal
       if(goodvars.size()>1) { //know there are variables we could split l and r on
-         PGly = pi.alpha/pow(1.0 + dnx+1.0,pi.beta); //depth of new nodes would be one more
+         PGly = pi.alpha/pow(1.0 + dnx+1.0,pi.betap); //depth of new nodes would be one more
          PGry = PGly;
       } else { //only had v to work with, if it is exhausted at either child need PG=0
          if((int)(c-1)<L) { //v exhausted in new left child l, new upper limit would be c-1
             PGly = 0.0;
          } else {
-            PGly = pi.alpha/pow(1.0 + dnx+1.0,pi.beta);
+            PGly = pi.alpha/pow(1.0 + dnx+1.0,pi.betap);
          }
          if(U < (int)(c+1)) { //v exhausted in new right child r, new lower limit would be c+1
             PGry = 0.0;
          } else {
-            PGry = pi.alpha/pow(1.0 + dnx+1.0,pi.beta);
+            PGry = pi.alpha/pow(1.0 + dnx+1.0,pi.betap);
          }
       }
 
@@ -153,7 +150,7 @@ GetRNGstate();
 
       double PGny; //prob the nog node grows
       size_t dny = nx->depth();
-      PGny = pi.alpha/pow(1.0+dny,pi.beta);
+      PGny = pi.alpha/pow(1.0+dny,pi.betap);
 
       //better way to code these two?
       double PGlx = pgrow(nx->getl(),xi,pi);

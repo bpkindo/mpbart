@@ -7,4 +7,5 @@ Depends:
     R (>= 3.2.2), mlbench, bayesm, cvTools, mlogit
 License: GPL (>= 2)
 LazyData: true
+LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 5.0.1

@@ -151,9 +151,7 @@ testX = testData$X
 	savesigma = 1;
 	}
   
-	
-    res =   .C("rmnpMDA",w=as.double(rep(0,nrow(X))),
-               trainx= as.double(t(X)), 
+res =   rmnpMDA(trainx= as.double(t(X)), 
                testx= as.double(t(testX)),
                mu = as.double(rep(0,nrow(X))),
                sigmai = as.double(sigmai),
@@ -177,13 +175,12 @@ testX = testData$X
                nc = as.integer(nc),
 				 savesigma = as.integer(savesigma),
 				 minobsnode = as.integer(minobsnode),
-               sigmasample = sigmasample,
-			   PACKAGE="mpbart")      
+               sigmasample = sigmasample)      
 
-class_prob_train = matrix(res$trainpred,ncol = p, byrow = TRUE)
+class_prob_train = res$trainpred
 predicted_class_train = apply(class_prob_train,1,which.max)
 
-class_prob_test = matrix(res$testpred,ncol = p, byrow = TRUE)
+class_prob_test =  res$testpred
 predicted_class_test = apply(class_prob_test,1,which.max)
 
 ret = list(class_prob_train = class_prob_train, 

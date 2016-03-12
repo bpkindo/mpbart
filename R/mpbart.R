@@ -167,7 +167,7 @@ out <- mpbart_call(formula = formula,
                   test.data = test.data,
                   Prior = Prior, Mcmc = Mcmc, 
                   varying = varying, sep = sep)
- return(out)
+return(out)
 }
 
 

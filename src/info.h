@@ -17,13 +17,13 @@ public:
 class pinfo
 {
 public:
-   pinfo() {pbd=1.0;pb=.5;alpha=.95;beta=.5;tau=1.0;sigma=1.0;}
+   pinfo() {pbd=1.0;pb=.5;alpha=.95;betap=.5;tau=1.0;sigma=1.0;}
 //mcmc info
    double pbd; //prob of birth/death
    double pb;  //prob of birth
 //prior info
    double alpha;
-   double beta;
+   double betap;
    double tau;
 //sigma
    double sigma;
