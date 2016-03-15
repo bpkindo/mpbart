@@ -68,6 +68,8 @@ if(is.null(seedvalue)){
 	set.seed(seedvalue)
 }
 
+p = length(unique(y.train))
+
 XEx = NULL;
 for(i in 1:nrow(x.train)){
 XEx = rbind(XEx, matrix(rep(x.train[i,], p-1), byrow = TRUE, ncol = ncol(x.train) ) )
@@ -75,14 +77,12 @@ XEx = rbind(XEx, matrix(rep(x.train[i,], p-1), byrow = TRUE, ncol = ncol(x.train
 
 
 if(!is.na(x.test)[1]){
-	testXEx = NULL;
-	for(i in 1:nrow(x.test)){
-	testXEx = rbind(testXEx, matrix(rep(x.test[i,], p-1), byrow = TRUE, ncol = ncol(x.test) ) )
-	}
+	colnames(x.test) <- NULL
+	testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p))
 } else {
 	testXEx = 0
 }
-p = length(unique(y.train))
+
 
 Data = list(p=p,y=y.train,X= XEx)
 
