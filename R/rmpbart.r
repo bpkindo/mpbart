@@ -184,10 +184,10 @@ testX = testData$X
                sigmasample = sigmasample,
 			   PACKAGE="mpbart")      
 
-class_prob_train = matrix(res$trainpred,ncol = p, byrow = TRUE)
+class_prob_train = res$trainpred
 predicted_class_train = apply(class_prob_train,1,which.max)
 
-class_prob_test = matrix(res$testpred,ncol = p, byrow = TRUE)
+class_prob_test =  res$testpred
 predicted_class_test = apply(class_prob_test,1,which.max)
 
 ret = list(class_prob_train = class_prob_train, 
