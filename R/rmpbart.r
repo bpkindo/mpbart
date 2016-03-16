@@ -82,7 +82,7 @@ if(!is.na(x.test)[1]){
   	# get rid of the column headers for the matrix
   	colnames(x.test) <- NULL
   	# Create the new matrix
-  	testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p))
+  	testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p-1))
 } else {
 	testXEx = 0
 }
@@ -184,10 +184,10 @@ testX = testData$X
                sigmasample = sigmasample,
 			   PACKAGE="mpbart")      
 
-class_prob_train = res$trainpred
+class_prob_train = matrix(res$trainpred,ncol = p, byrow = TRUE)
 predicted_class_train = apply(class_prob_train,1,which.max)
 
-class_prob_test =  res$testpred
+class_prob_test = matrix(res$testpred,ncol = p, byrow = TRUE)
 predicted_class_test = apply(class_prob_test,1,which.max)
 
 ret = list(class_prob_train = class_prob_train, 
