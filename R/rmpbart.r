@@ -77,8 +77,12 @@ XEx = rbind(XEx, matrix(rep(x.train[i,], p-1), byrow = TRUE, ncol = ncol(x.train
 
 
 if(!is.na(x.test)[1]){
-	colnames(x.test) <- NULL
-	testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p))
+	# convert to matrix, including columns with factors
+	x.test = as.matrix(sapply(x.test, as.numeric))
+  	# get rid of the column headers for the matrix
+  	colnames(x.test) <- NULL
+  	# Create the new matrix
+  	testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p))
 } else {
 	testXEx = 0
 }
