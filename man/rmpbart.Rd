@@ -4,8 +4,14 @@
 \alias{rmpbart}
 \title{Multinomial Probit Bayesian Additive Regression Trees}
 \usage{
-rmpbart(x.train, y.train, x.test = NULL, Prior = NULL, Mcmc = NULL,
-  seedvalue = NULL)
+rmpbart(
+  x.train,
+  y.train,
+  x.test = NULL,
+  Prior = NULL,
+  Mcmc = NULL,
+  seedvalue = NULL
+)
 }
 \arguments{
 \item{x.train}{Training data predictors.}
@@ -72,4 +78,3 @@ test_err <- sum(test_wave$classes != out$predicted_class_test)/
 
 cat("test error :", test_err )
 }
-

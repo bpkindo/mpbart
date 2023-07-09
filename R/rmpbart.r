@@ -62,41 +62,37 @@ rmpbart =
   function(x.train, y.train, x.test = NULL, Prior = NULL, Mcmc = NULL, seedvalue = NULL) 
   {
     
-if(is.null(seedvalue)){
-	seedvalue = 99
-} else {
-	set.seed(seedvalue)
-}
+    if(is.null(seedvalue)){
+      seedvalue = 99
+    } else {
+      set.seed(seedvalue)
+    }
+    
+    p = length(unique(y.train))
+    
+    XEx <- apply( x.train, 2, function(x) rep(as.matrix(x), each = p-1))
 
-p = length(unique(y.train))
-
-XEx = NULL;
-for(i in 1:nrow(x.train)){
-XEx = rbind(XEx, matrix(rep(x.train[i,], p-1), byrow = TRUE, ncol = ncol(x.train) ) )
-}
-
-
-if(!is.na(x.test)[1]){
-	# convert to matrix, including columns with factors
-	x.test = as.matrix(sapply(x.test, as.numeric))
-  	# get rid of the column headers for the matrix
-  	colnames(x.test) <- NULL
-  	# Create the new matrix
-  	testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p-1))
-} else {
-	testXEx = 0
-}
-
-
-Data = list(p=p,y=y.train,X= XEx)
-
-testData = list(p=p,X= testXEx)
-
-p=Data$p
-y=Data$y
-X=Data$X
-testX = testData$X
-   
+    if(!is.na(x.test)[1]){
+      # convert to matrix, including columns with factors
+      x.test = as.matrix(sapply(x.test, as.numeric))
+      # get rid of the column headers for the matrix
+      colnames(x.test) <- NULL
+      # Create the new matrix
+      testXEx <- apply( x.test, 2, function(x) rep(as.matrix(x), each = p-1))
+    } else {
+      testXEx = 0
+    }
+    
+    
+    Data = list(p=p,y=y.train,X= XEx)
+    
+    testData = list(p=p,X= testXEx)
+    
+    p=Data$p
+    y=Data$y
+    X=Data$X
+    testX = testData$X
+    
     
     levely=as.numeric(levels(as.factor(y)))
     
@@ -110,25 +106,25 @@ testX = testData$X
     
     if(missing(Prior)) 
     {nu=pm1+3; V=nu*diag(pm1);
-      ntrees=200; kfac=2.0;pbd=1.0;pb=0.5;beta = 2.0;alpha = 0.95; nc = 100; priorindep = 0; minobsnode = 10;
+    ntrees=200; kfac=2.0;pbd=1.0;pb=0.5;beta = 2.0;alpha = 0.95; nc = 100; priorindep = 0; minobsnode = 10;
     }
     else 
     {if(is.null(Prior$nu)) {nu=pm1+3} else {nu=Prior$nu}
-     if(is.null(Prior$V)) {V=nu*diag(pm1)} else {V=Prior$V}
-     if(is.null(Prior$ntrees)) {ntrees=200} else {ntrees=Prior$ntrees}
-     if(is.null(Prior$kfac)) {kfac=2.0} else {kfac=Prior$kfac}
-     if(is.null(Prior$pbd)) {pbd=1.0} else {pbd=Prior$pbd}
-     if(is.null(Prior$pb)) {pb=0.5} else {pb=Prior$pb}
-     if(is.null(Prior$beta)) {beta = 2.0} else {beta=Prior$beta}
-     if(is.null(Prior$alpha)) {alpha = 0.95} else {alpha=Prior$alpha}
-     if(is.null(Prior$nc)) {nc=100} else {nc=Prior$nc}
-     if(is.null(Prior$priorindep)) {priorindep= FALSE} else {priorindep=Prior$priorindep}
-     if(is.null(Prior$minobsnode)) {minobsnode= 10} else {minobsnode=Prior$minobsnode}
-     
-     
+      if(is.null(Prior$V)) {V=nu*diag(pm1)} else {V=Prior$V}
+      if(is.null(Prior$ntrees)) {ntrees=200} else {ntrees=Prior$ntrees}
+      if(is.null(Prior$kfac)) {kfac=2.0} else {kfac=Prior$kfac}
+      if(is.null(Prior$pbd)) {pbd=1.0} else {pbd=Prior$pbd}
+      if(is.null(Prior$pb)) {pb=0.5} else {pb=Prior$pb}
+      if(is.null(Prior$beta)) {beta = 2.0} else {beta=Prior$beta}
+      if(is.null(Prior$alpha)) {alpha = 0.95} else {alpha=Prior$alpha}
+      if(is.null(Prior$nc)) {nc=100} else {nc=Prior$nc}
+      if(is.null(Prior$priorindep)) {priorindep= FALSE} else {priorindep=Prior$priorindep}
+      if(is.null(Prior$minobsnode)) {minobsnode= 10} else {minobsnode=Prior$minobsnode}
+      
+      
     }
-
-        if(is.null(Mcmc$sigma0)) {sigma0=diag(pm1)} else {sigma0=Mcmc$sigma0}
+    
+    if(is.null(Mcmc$sigma0)) {sigma0=diag(pm1)} else {sigma0=Mcmc$sigma0}
     
     if(is.null(Mcmc$keep)) {keep=1} else {keep=Mcmc$keep}
     if(is.null(Mcmc$burn)) {burn=100} else {burn=Mcmc$burn}
@@ -138,62 +134,62 @@ testX = testData$X
     
     
     
-
-	
+    
+    
     C=chol(solve(sigma0))
     #
     #  C is upper triangular root of sigma^-1 (G) = C'C
     #
     sigmai=crossprod(C)
     
-   
-	if( (priorindep ==TRUE) || (keep_sigma_draws==FALSE)){
-	sigmasample = as.double(0);
-	savesigma = 0;
-	} else {
-	sigmasample = as.double(rep(sigma0, ndraws+burn));
-	savesigma = 1;
-	}
-  
-res =   rmnpMDA(trainx= as.double(t(X)), 
-               testx= as.double(t(testX)),
-               mu = as.double(rep(0,nrow(X))),
-               sigmai = as.double(sigmai),
-               V = as.double(V),
-               n = as.integer(length(y)),
-               n_dim = as.integer(ncol(sigmai)),
-               y = as.integer(y), 
-               n_cov = as.integer(k), 
-               nu = as.integer(nu), 
-               trainpred = as.double(rep(0,p*n)) , 
-               testn = as.integer(testn), 
-               testpred = as.double(rep(0,p*testn)), 
-               ndraws = as.integer(ndraws), 
-               burn = as.integer(burn),
-               ntrees = as.integer(ntrees),
-               kfac = as.double(kfac), 
-               pbd = as.double(pbd), 
-               pb = as.double(pb), 
-               alpha = as.double(alpha),  
-               beta =  as.double(beta),
-               nc = as.integer(nc),
-				 savesigma = as.integer(savesigma),
-				 minobsnode = as.integer(minobsnode),
-               sigmasample = sigmasample)      
-
-class_prob_train = res$trainpred
-predicted_class_train = apply(class_prob_train,1,which.max)
-
-class_prob_test =  res$testpred
-predicted_class_test = apply(class_prob_test,1,which.max)
-
-ret = list(class_prob_train = class_prob_train, 
-			predicted_class_train = predicted_class_train,
-			class_prob_test = class_prob_test, 
-			predicted_class_test = predicted_class_test);
-			
-			
-class(ret) = "mpbart"
-
-return(ret)
-}
+    
+    if( (priorindep ==TRUE) || (keep_sigma_draws==FALSE)){
+      sigmasample = as.double(0);
+      savesigma = 0;
+    } else {
+      sigmasample = as.double(rep(sigma0, ndraws+burn));
+      savesigma = 1;
+    }
+    
+    res =   rmnpMDA(trainx= as.double(t(X)), 
+                    testx= as.double(t(testX)),
+                    mu = as.double(rep(0,nrow(X))),
+                    sigmai = as.double(sigmai),
+                    V = as.double(V),
+                    n = as.integer(length(y)),
+                    n_dim = as.integer(ncol(sigmai)),
+                    y = as.integer(y), 
+                    n_cov = as.integer(k), 
+                    nu = as.integer(nu), 
+                    trainpred = as.double(rep(0,p*n)) , 
+                    testn = as.integer(testn), 
+                    testpred = as.double(rep(0,p*testn)), 
+                    ndraws = as.integer(ndraws), 
+                    burn = as.integer(burn),
+                    ntrees = as.integer(ntrees),
+                    kfac = as.double(kfac), 
+                    pbd = as.double(pbd), 
+                    pb = as.double(pb), 
+                    alpha = as.double(alpha),  
+                    beta =  as.double(beta),
+                    nc = as.integer(nc),
+                    savesigma = as.integer(savesigma),
+                    minobsnode = as.integer(minobsnode),
+                    sigmasample = sigmasample)      
+    
+    class_prob_train = res$trainpred
+    predicted_class_train = apply(class_prob_train,1,which.max)
+    
+    class_prob_test =  res$testpred
+    predicted_class_test = apply(class_prob_test,1,which.max)
+    
+    ret = list(class_prob_train = class_prob_train, 
+               predicted_class_train = predicted_class_train,
+               class_prob_test = class_prob_test, 
+               predicted_class_test = predicted_class_test);
+    
+    
+    class(ret) = "mpbart"
+    
+    return(ret)
+  }

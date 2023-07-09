@@ -82,21 +82,20 @@ if (!is.null(test.data)){
     Xtest <- test.data[,xcolnames]  
   }
   
-  testXEx = NULL;
-    for(i in 1:nrow(Xtest)){
-      testXEx = rbind(testXEx, matrix(rep(Xtest[i,], p-1), byrow = TRUE, ncol = ncol(Xtest) ) )
-    }
-   
+  x.test = as.matrix(sapply(Xtest, as.numeric))
+  # get rid of the column headers for the matrix
+  colnames(Xtest) <- NULL
+  # Create the new matrix
+  testXEx <- apply( Xtest, 2, function(x) rep(as.matrix(x), each = p-1))
+  
+
   
 } else {
   testXEx = 0
 }
 
 
-XEx = NULL;
-for(i in 1:nrow(X)){
-  XEx = rbind(XEx, matrix(rep(X[i,], p-1), byrow = TRUE, ncol = ncol(X) ) )
-}
+XEx <- apply( X, 2, function(x) rep(as.matrix(x), each = p-1))
 
 
 Data = list(p=p,y=Y,X= XEx)
@@ -188,6 +187,10 @@ if(is.null(Mcmc$ndraws)) {ndraws=1000} else {ndraws=Mcmc$ndraws}
 if(is.null(Mcmc$keep_sigma_draws)) {keep_sigma_draws=FALSE} else {keep_sigma_draws=Mcmc$keep_sigma_draws}
 
 
+
+
+
+
 C=chol(solve(sigma0))
 #
 #  C is upper triangular root of sigma^-1 (G) = C'C
@@ -195,72 +198,76 @@ C=chol(solve(sigma0))
 sigmai=crossprod(C)
 
 if( (priorindep ==TRUE) || (keep_sigma_draws==FALSE)){
-  sigmasample = 0.0;
+  sigmasample = as.double(0);
   savesigma = 0;
 } else {
-  sigmasample = rep(sigma0, ndraws+burn);
+  sigmasample = as.double(rep(sigma0, ndraws+burn));
   savesigma = 1;
 }
 
-cat("Number of trees: ", ntrees, "\n", sep="") 
-cat("Number of draws: ", ndraws, "\n", sep="") 
-cat("burn-in: ", burn, "\n", sep="") 
-
-trainx <- matrix(as.double(data.matrix(Data$X)), ncol = dim(Data$X)[2],byrow=FALSE)
-testx <- matrix(as.double(data.matrix(testData$X)), ncol = dim(testData$X)[2],byrow=FALSE)
-res =  rcpparma_rmnpMDA(trainx =  trainx, 
-                        testx = testx,
-            sigmai = sigmai,
-           V = V,
-           n = length(Data$y),
-           n_dim = ncol(sigmai),
-           y = Data$y, 
-           pn_cov =  ncol(Data$X), 
-           nu = nu, 
-#           ptrainpred = matrix(rep(0,p*n), nrow=n) , 
-           testn = testn, 
-#           ptestpred = matrix(rep(0,p*testn),nrow=testn), 
-           pndraws = ndraws, 
-           pburn = burn,
-           pntrees = ntrees,
-           pkfac = kfac, 
-           ppbd = pbd, 
-           ppb = pb, 
-           palpha =alpha,  
-           pbetap = beta,
-           pnc = nc,
-           savesigma = savesigma,
-           minobsnode = minobsnode)      
+cat("Number of trees: ", ntrees, "'.\n\n", sep="") 
+cat("Number of draws: ", ndraws, "'.\n\n", sep="") 
+cat("burn-in: ", burn, "'.\n\n", sep="") 
 
 
-class_prob_train <- res$ptrainpred
+
+res =   .C("rmnpMDA",w=as.double(rep(0,nrow(Data$X))),
+           trainx= as.double(t(Data$X)), 
+           testx= as.double(t(testData$X)),
+           mu = as.double(rep(0,nrow(Data$X))),
+           sigmai = as.double(sigmai),
+           V = as.double(V),
+           n = as.integer(length(Data$y)),
+           n_dim = as.integer(ncol(sigmai)),
+           y = as.integer(Data$y), 
+           n_cov = as.integer(ncol(Data$X)), 
+           nu = as.integer(nu), 
+           trainpred = as.double(rep(0,p*n)) , 
+           testn = as.integer(testn), 
+           testpred = as.double(rep(0,p*testn)), 
+           ndraws = as.integer(ndraws), 
+           burn = as.integer(burn),
+           ntrees = as.integer(ntrees),
+           kfac = as.double(kfac), 
+           pbd = as.double(pbd), 
+           pb = as.double(pb), 
+           alpha = as.double(alpha),  
+           beta =  as.double(beta),
+           nc = as.integer(nc),
+           savesigma = as.integer(savesigma),
+           minobsnode = as.integer(minobsnode),
+           sigmasample = sigmasample,
+           PACKAGE="mpbart")      
+
+
+class_prob_train <- matrix(res$trainpred,ncol = p, byrow = TRUE)
 class_prob_train <- data.frame(class_prob_train)
 names(class_prob_train) <- relvelved
- 
+
 predicted_class_train <- apply(class_prob_train,1,function(x) relvelved[which.max(x)] )
 predicted_class_train <- as.factor(predicted_class_train)
- 
+
 if (!is.null(test.data)){
-   class_prob_test <- res$ptestpred
-   class_prob_test <- data.frame(class_prob_test)
-   names(class_prob_test) <- relvelved
-   predicted_class_test <- apply(class_prob_test,1,function(x) relvelved[which.max(x)] )
-   predicted_class_test <- as.factor(predicted_class_test)
-   
- } else {
-   class_prob_test <- NULL
-   predicted_class_test <- NULL
- }
- 
- ret = list(class_prob_train = class_prob_train, 
-            predicted_class_train = predicted_class_train,
-            class_prob_test = class_prob_test, 
-            predicted_class_test = predicted_class_test, 
-            sigmasample = res$psigmasample);
- 
- 
- 
- class(ret) = "mpbart"
- 
- return(ret)
+  class_prob_test <- matrix(res$testpred,ncol = p, byrow = TRUE)
+  class_prob_test <- data.frame(class_prob_test)
+  names(class_prob_test) <- relvelved
+  predicted_class_test <- apply(class_prob_test,1,function(x) relvelved[which.max(x)] )
+  predicted_class_test <- as.factor(predicted_class_test)
+  
+} else {
+  class_prob_test <- NULL
+  predicted_class_test <- NULL
+}
+
+ret = list(class_prob_train = class_prob_train, 
+           predicted_class_train = predicted_class_train,
+           class_prob_test = class_prob_test, 
+           predicted_class_test = predicted_class_test, 
+           sigmasample = res$sigmasample);
+
+
+
+class(ret) = "mpbart"
+
+return(ret)
 }

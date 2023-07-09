@@ -6,6 +6,7 @@
 
 #include <R.h>
 #include <Rmath.h>
+#include <R_ext/Lapack.h>
 using std::string;
 //--------------------------------------------------
 // constructors

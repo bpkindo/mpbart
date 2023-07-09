@@ -4,97 +4,84 @@
 #include <map>
 #include <R.h>
 #include <Rmath.h>
-#include <RcppArmadillo.h>
-#include <Rcpp.h>
+#include <R_ext/Lapack.h>
 #include "tree.h"
 #include "info.h"
 #include "bd.h"
 #include "funs.h"
 
-//some functions here taken from bayesm package
-arma::vec condmom(arma::vec const& x, arma::vec const& mu, arma::mat const& sigmai, int p, int j){
-  
-//function to compute moments of x[j] | x[-j]
-//output is a vec: the first element is the conditional mean
-//                 the second element is the conditional sd
+void condmom(double *x, double *mu, double *sigi, int p, int j, double *m, double *csig)
+{
+/*	function to compute moments of x[j] | x[-j]  */
 
-  arma::vec out(2);
-  int jm1 = j-1;
-  int ind = p*jm1;
-  
-  double csigsq = 1./sigmai(ind+jm1);
-  double m = 0.0;
-  
-  for(int i = 0; i<p; i++) if (i!=jm1) m += - csigsq*sigmai(ind+i)*(x[i]-mu[i]);
-  
-  out[0] = mu[jm1]+m;
-  out[1] = sqrt(csigsq);
-  
-  return (out);
+	int ind,i,jm1;
+	double csigsq;
+	jm1=j-1;
+	ind = p*jm1;
+	csigsq = 1./sigi[ind+jm1];
+
+	*m = 0.0;
+	for (i=0 ; i < p; ++i)
+		{
+		if (i != jm1) 
+			{*m +=  - csigsq*sigi[ind+i]*(x[i]-mu[i]);}
+		}
+	*m=mu[jm1]+*m ;
+	*csig=sqrt(csigsq);
 }
 
-
-
-double rtrun(double mu, double sigma,double trunpt, int above){
-
-	double FA,FB,rnd,result,arg;
+double rtrun(double mu, double sigma,double trunpt, int above) 
+{
+	double FA,FB,rnd,result,arg ;
 	if (above) {
-		FA = 0.0; FB = R::pnorm(((trunpt-mu)/(sigma)),0.0,1.0,1,0);
-	} else {
-		FB = 1.0; FA = R::pnorm(((trunpt-mu)/(sigma)),0.0,1.0,1,0);
-	}
+		FA=0.0; FB=pnorm(((trunpt-mu)/(sigma)),0.0,1.0,1,0);
+			}
+	else {
+		FB=1.0; FA=pnorm(((trunpt-mu)/(sigma)),0.0,1.0,1,0);
+		}
 	
-  rnd = unif_rand(); 
-	arg = rnd*(FB-FA)+FA;
-	if(arg > .999999999) arg = .999999999;
-	if(arg < .0000000001) arg = .0000000001;
-	result = mu + sigma*R::qnorm(arg,0.0,1.0,1,0);
-
-	return (result);
+	GetRNGstate();
+	rnd=unif_rand();
+	arg=rnd*(FB-FA)+FA;
+	if(arg > .999999999) arg=.999999999;
+	if(arg < .0000000001) arg=.0000000001;
+	result = mu + sigma*qnorm(arg,0.0,1.0,1,0);
+	PutRNGstate();
+	return result;
 }
+void drawwi(double *w, double *mu, double *sigmai,int *p, int *y)
+{
+/*	function to draw w_i by Gibbing's thru p vector   */
 
-arma::vec drawwi(arma::vec const& w, arma::vec const& mu, arma::mat const& sigmai, int p, int y){
-
-//function to draw w_i by Gibbing thru p vector
-
-  int above;
+	int i,j,above;
 	double bound;
-  arma::vec outwi = w;
-  arma::vec maxInd(2);
+	double mean, csig;
 
-	for(int i = 0; i<p; i++){	
-		bound = 0.0;
-		for(int j = 0; j<p; j++) if(j!=i) {
-        maxInd[0] = bound;
-        maxInd[1] = outwi[j];
-        bound = max(maxInd);}
-    
-    if (y==(i+1))
-			above = 0;
-		else 
-			above = 1;
-    
-		arma::vec CMout = condmom(outwi,mu,sigmai,p,i+1);
-    outwi[i] = rtrun(CMout[0],CMout[1],bound,above);
-  }
+		for (i=0; i < *p; ++i) 
+		{	
+			bound=0.0;
+		    	for (j=0; j < *p ; ++j) 
+				{ if (j != i) {bound=fmax2(bound,w[j]); }}
+			if (*y == i+1) 	
+				above = 0;
+			else 
+				above = 1;
 
-  return (outwi);
+		condmom(w,mu,sigmai,*p,(i+1),&mean,&csig);
+		w[i]=rtrun(mean,csig,bound,above);
+
+		}
 }
 
-arma::vec draww(arma::vec const& w, arma::vec const& mu, arma::mat const& sigmai, arma::ivec const& y){
-//function to gibbs down entire w vector for all n obs
-  
-  int n = y.n_rows;
-  int p = sigmai.n_cols;
-  int ind; 
-  arma::vec outw = arma::zeros<arma::vec>(w.n_rows);
-  
-	for(int i = 0; i<n; i++){
-    ind = p*i;
-		outw.subvec(ind,ind+p-1) = drawwi(w.subvec(ind,ind+p-1),mu.subvec(ind,ind+p-1),sigmai,p,y[i]);
+void draww(double *w, double *mu, double *sigmai, int *n, int *p, int *y) 
+{
+/*	function to gibbs down entire w vector for all n obs  */
+	int i, ind;
+	for (i=0; i < *n; ++i)
+	{
+		ind= *p * i;
+		drawwi(w+ind,mu+ind,sigmai,p,y+i);
 	}
-
-  return (outw);
 }
 
 
@@ -116,6 +103,7 @@ void getcutpoints(int nc, int n_cov, int n_samp,
          if(xx > maxx[j]) maxx[j]=xx;
       }
    }
+
 
 
    //make grid of nc cutpoints between min and max for each x.
@@ -163,71 +151,34 @@ void fit(tree& t, std::vector<std::vector<double> >& X, dinfo di, xinfo& xi, std
 
 
 void getpseudoresponse(dinfo& di, std::vector<std::vector<double> >& ftemp,  
-						std::vector<std::vector<double> >& rtemp, arma::mat& sigmai,
+						std::vector<std::vector<double> >& rtemp, double *sigmai,
 						std::vector<std::vector<double> >& r, std::vector<double>& condsig){
-arma::mat tempres = arma::zeros<arma::vec>(di.n_dim);
-arma::mat tempmean = tempres;
+double mean, csig;
+double* tempres = new double[di.n_dim];
+double* tempmean = new double[di.n_dim];
 int itemp = 0;
 for(size_t i=0; i<di.n_samp; i++){
 	itemp = 0;
 	//prediction from current tree for current i
 	for(size_t k=0; k<di.n_dim; k++){
-		tempmean(itemp++) = ftemp[k][i];
+		tempmean[itemp++] = ftemp[k][i];
 	}
 	itemp = 0;
 	//simulated latent for current i
 	for(size_t k=0; k<di.n_dim; k++){
-		tempres(itemp++) = rtemp[k][i];
+		tempres[itemp++] = rtemp[k][i];
 	}
 
 	for(size_t k=0; k<di.n_dim; k++){
-		arma::vec condmean = condmom(tempres,tempmean,sigmai,(int)di.n_dim,(int)(k+1));
-		r[k][i] = tempres(k)- condmean(0) + tempmean(k);
-		if(i==0) condsig[k] = condmean(1);
+		condmom(tempres,tempmean,sigmai,(int)di.n_dim,(int)(k+1),&mean,&csig);
+		r[k][i] = tempres[k]- mean + tempmean[k];
+		if(i==0) condsig[k] = csig;
 	}
 
 }
 
 }
 
-Rcpp::List rwishart(int const& nu, arma::mat const& V){
-
-// Function to draw from Wishart (nu,V) and IW
- 
-// W ~ W(nu,V)
-// E[W]=nuV
-
-// WI=W^-1
-// E[WI]=V^-1/(nu-m-1)
-  
-  // T has sqrt chisqs on diagonal and normals below diagonal
-  int m = V.n_rows;
-  arma::mat T = arma::zeros(m,m);
-  
-  for(int i = 0; i < m; i++) {
-    T(i,i) = sqrt(Rcpp::rchisq(1,nu-i)[0]); //rchisq returns a vectorized object, so using [0] allows for the conversion to double
-  }
-  
-  for(int j = 0; j < m; j++) {  
-    for(int i = j+1; i < m; i++) {    
-      T(i,j) = Rcpp::rnorm(1)[0]; //rnorm returns a NumericVector, so using [0] allows for conversion to double
-  }}
-  
-  arma::mat C = arma::trans(T)*arma::chol(V);
-  arma::mat CI = arma::solve(arma::trimatu(C),arma::eye(m,m)); //trimatu interprets the matrix as upper triangular and makes solve more efficient
-  
-  // C is the upper triangular root of Wishart therefore, W=C'C
-  // this is the LU decomposition Inv(W) = CICI' Note: this is
-  // the UL decomp not LU!
-  
-  // W is Wishart draw, IW is W^-1
-  
-  return Rcpp::List::create(
-    Rcpp::Named("W") = arma::trans(C) * C,
-     Rcpp::Named("IW") = CI * arma::trans(CI),
-    Rcpp:: Named("C") = C,
-    Rcpp:: Named("CI") = CI);
-}
 
 
 //--------------------------------------------------
@@ -263,7 +214,7 @@ void getgoodvars(tree::tree_p n, xinfo& xi,  std::vector<size_t>& goodvars)
 double pgrow(tree::tree_p n, xinfo& xi, pinfo& pi)
 {
    if(cansplit(n,xi)) {
-      return pi.alpha/pow(1.0+n->depth(),pi.betap);
+      return pi.alpha/pow(1.0+n->depth(),pi.beta);
    } else {
       return 0.0;
    }
@@ -408,7 +359,55 @@ PutRNGstate();
 }
 
 
-/*
+void dinv(std::vector<std::vector<double> >& X,
+	  int	size,
+	  std::vector<std::vector<double> >& X_inv)
+{
+  int i,j, k, errorM;
+  double* pdInv = new double[(int)(size * size)];
+ X_inv.resize(size);
+ for (j = 0; j < size; j++) X_inv[j].resize(size);
+  
+
+  for (i = 0, j = 0; j < size; j++) 
+    for (k = 0; k <= j; k++) 
+      pdInv[i++] = X[k][j];
+  F77_CALL(dpptrf)("U", &size, pdInv, &errorM);
+  if (!errorM) {
+    F77_CALL(dpptri)("U", &size, pdInv, &errorM);
+    if (errorM) {
+      Rprintf("LAPACK dpptri failed, %d\n", errorM);
+      
+	  for(int jj=0; jj<size;jj++){
+		for(int kk=0; kk<size;kk++){
+		
+	  }
+	  }
+	  
+	  error("Exiting from dinv().\n");
+	  
+    }
+  }
+  else {
+    Rprintf("LAPACK dpptrf failed, %d\n", errorM);
+		  for(int jj=0; jj<size;jj++){
+		for(int kk=0; kk<size;kk++){
+			
+	  }
+	  }
+    error("Exiting from dinv().\n");
+  }
+  for (i = 0, j = 0; j < size; j++) {
+    for (k = 0; k <= j; k++) {
+      X_inv[j][k] = pdInv[i];
+      X_inv[k][j] = pdInv[i++];
+    }
+  }
+
+
+}
+
+
 void dcholdc(std::vector<std::vector<double> >& X, int size, std::vector<std::vector<double> >& L)
 {
   int i, j, k, errorM;
@@ -434,72 +433,111 @@ void dcholdc(std::vector<std::vector<double> >& X, int size, std::vector<std::ve
   }
 
 } 
-*/
-void rWish(arma::mat& Sample,        /* The matrix with to hold the sample */
-	   arma::mat& S,             /* The parameter */
-	   size_t df,                 /* the degrees of freedom */
-	   size_t size)               /* The dimension */
+
+
+
+void rWish(std::vector<std::vector<double> >& Sample,        /* The matrix with to hold the sample */
+	   std::vector<std::vector<double> >& S,             /* The parameter */
+	   int df,                 /* the degrees of freedom */
+	   int size)               /* The dimension */
 {
 GetRNGstate();
 
+  int i,j,k;
 
   double* V = new double[(int)size];
-  arma::mat B(size,size);
-  arma::mat N(size,size); arma::mat mtemp(size,size);
+  std::vector<std::vector<double> > B, C, N, mtemp;
+	B.resize(size); C.resize(size); N.resize(size); mtemp.resize(size);
+	for (j = 0; j < size; j++){
+		B[j].resize(size); C[j].resize(size); N[j].resize(size); mtemp[j].resize(size);
+	}
   
-  for(size_t i=0;i<size;i++) {
-    V[i]=R::rchisq((double) df-i-1);
-    B(i,i)=V[i];
-    for(size_t j=(i+1);j<size;j++)
-      N(i,j)=norm_rand();
+  for(i=0;i<size;i++) {
+    V[i]=rchisq((double) df-i-1);
+    B[i][i]=V[i];
+    for(j=(i+1);j<size;j++)
+      N[i][j]=norm_rand();
   }
 
-  for(size_t i=0;i<size;i++) {
-    for(size_t j=i;j<size;j++) {
-      Sample(i,j)=0;
-      Sample(j,i)=0;
-      mtemp(i,j)=0;
-      mtemp(j,i)=0;
+  for(i=0;i<size;i++) {
+    for(j=i;j<size;j++) {
+      Sample[i][j]=0;
+      Sample[j][i]=0;
+      mtemp[i][j]=0;
+      mtemp[j][i]=0;
       if(i==j) {
 	if(i>0)
-	  for(size_t k=0;k<j;k++)
-	    B(j,j)+=N(k,j)*N(k,j);
+	  for(k=0;k<j;k++)
+	    B[j][j]+=N[k][j]*N[k][j];
       }
       else { 
-	B(i,j)=N(i,j)*sqrt(V[i]);
+	B[i][j]=N[i][j]*sqrt(V[i]);
 	if(i>0)
-	  for(size_t k=0;k<i;k++)
-	    B(i,j)+=N(k,i)*N(k,j);
+	  for(k=0;k<i;k++)
+	    B[i][j]+=N[k][i]*N[k][j];
       }
-      B(j,i)=B(i,j);
+      B[j][i]=B[i][j];
     }
   }
   
-  //dcholdc(S, size, C);
-  arma::mat C = arma::chol(S, "lower");
-  for(size_t i=0;i<size;i++){
-    for(size_t j=0;j<size;j++){
-      for(size_t k=0;k<size;k++){
-		mtemp(i,j)+=C(i,k)*B(k,j);
-			}
-		}
-	}
-  
-  for(size_t i=0;i<size;i++){
-    for(size_t j=0;j<size;j++){
-      for(size_t k=0;k<size;k++){
-		Sample(i,j)+=mtemp(i,k)*C(j,k);
-			}
-		}
-	}
+  dcholdc(S, size, C);
+  for(i=0;i<size;i++)
+    for(j=0;j<size;j++)
+      for(k=0;k<size;k++)
+	mtemp[i][j]+=C[i][k]*B[k][j];
+  for(i=0;i<size;i++)
+    for(j=0;j<size;j++)
+      for(k=0;k<size;k++)
+	Sample[i][j]+=mtemp[i][k]*C[j][k];
 PutRNGstate();
+
+}
+
+void DrawSigma(dinfo& di, double *V, std::vector<std::vector<double> >& allfit, 
+				double *w, std::vector<std::vector<double> >& WishSample, int nu)
+{
+
+std::vector<std::vector<double> > WishMat1;
+std::vector<std::vector<double> > epsilon;
+std::vector<std::vector<double> > WishMat1Inv;
+
+epsilon.resize(di.n_dim);
+WishMat1.resize(di.n_dim);
+for(size_t j=0;j<di.n_dim;j++){
+	WishMat1[j].resize(di.n_dim);
+	epsilon[j].resize(di.n_samp);
+}
+
+for(size_t i=0; i<di.n_samp; i++){
+	for(size_t k=0; k<di.n_dim; k++){
+		epsilon[k][i] = w[i*di.n_dim + k] - allfit[k][i];
+	}
+}
+
+for(size_t j=0;j<di.n_dim;j++){
+	for(size_t k=0;k<di.n_dim;k++){
+		WishMat1[j][k] = V[j*di.n_dim + k];
+	}
+}
+
+
+for(size_t i=0; i<di.n_samp; i++){
+	for(size_t j=0;j<di.n_dim;j++){
+		for(size_t k=0;k<di.n_dim;k++){
+		WishMat1[j][k] +=epsilon[j][i]*epsilon[k][i];
+		}
+	}	 
+}
+
+dinv(WishMat1 ,di.n_dim,WishMat1Inv);
+rWish(WishSample, WishMat1Inv, (int)(nu+di.n_samp),(int)di.n_dim);
 
 }
 
 
 //read X 
 
-void readx(std::vector<std::vector<std::vector<double> > >& XMat,dinfo& di, arma::mat const& pX){
+void readx(std::vector<std::vector<std::vector<double> > >& XMat,dinfo& di, double *pX){
 	XMat.resize(di.n_dim);
 	for(size_t j=0; j < di.n_dim; j++){
 	 XMat[j].resize(di.n_samp);
@@ -511,12 +549,12 @@ void readx(std::vector<std::vector<std::vector<double> > >& XMat,dinfo& di, arma
 		}
 	}
 
-	arma::mat pXtrans = arma::trans(pX);
+
 	int itemp = 0;
 	for(size_t i=0; i < di.n_samp; i++){
 		for(size_t j=0; j <  di.n_dim; j++){
 			for(size_t k=0; k< di.n_cov; k++){
-			 XMat[j][i][k] = pXtrans(itemp++);
+			 XMat[j][i][k] = pX[itemp++];
 			}
 		}
 	}
@@ -526,24 +564,24 @@ void readx(std::vector<std::vector<std::vector<double> > >& XMat,dinfo& di, arma
 
 /*  The Sweep operator */
 void SWP(
-	 arma::mat& X,             // The Matrix to work on 
+	 std::vector<std::vector<double> >& X,             // The Matrix to work on 
 	 size_t k,                  //The row to sweep 
 	 size_t size)               // The dim. of X 
 {
 
-  if (X(k,k) < 10e-20) 
+  if (X[k][k] < 10e-20) 
     error("SWP: singular matrix.\n");
   else
-    X(k,k)=-1/X(k,k);
+    X[k][k]=-1/X[k][k];
   for(size_t i=0;i<size;i++)
     if(i!=k){
-      X(i,k)=-X(i,k)*X(k,k);
-      X(k,i)=X(i,k);
+      X[i][k]=-X[i][k]*X[k][k];
+      X[k][i]=X[i][k];
     }
   for(size_t i=0;i<size;i++)
     for(size_t j=0;j<size;j++)
       if(i!=k && j!=k)
-	X(i,j)=X(i,j)+X(i,k)*X(k,j)/X(k,k);
+	X[i][j]=X[i][j]+X[i][k]*X[k][j]/X[k][k];
   
 }
 
@@ -551,29 +589,34 @@ void SWP(
 void rMVN(                      
 	  std::vector<double>& Sample,
 	  std::vector<double>& mean,
-	  arma::mat& Var,
+	  std::vector<std::vector<double> >& Var,
 	  size_t size)
 {
 	GetRNGstate();
 	
-  arma::mat Model(size+1,size+1);
+  std::vector<std::vector<double> > Model;
+  Model.resize(size +1);
+  for(size_t j=0; j<= size; j++){
+	  Model[j].resize(size + 1);
+  }
+
   double cond_mean;
     
   /* draw from mult. normal using SWP */
   for(size_t j=1;j<=size;j++){       
     for(size_t k=1;k<=size;k++) {
-      Model(j,k)=Var(j-1,k-1);
+      Model[j][k]=Var[j-1][k-1];
 	}
-    Model(0,j)=mean[j-1];
-    Model(j,0)=mean[j-1];
+    Model[0][j]=mean[j-1];
+    Model[j][0]=mean[j-1];
   }
-  Model(0,0)=-1;
-  Sample[0]=(double)norm_rand()*sqrt(Model(1,1))+Model(0,1);
+  Model[0][0]=-1;
+  Sample[0]=(double)norm_rand()*sqrt(Model[1][1])+Model[0][1];
   for(size_t j=2;j<=size;j++){
     SWP(Model,j-1,size+1);
-    cond_mean=Model(j,0);
-    for(size_t k=1;k<j;k++) cond_mean+=Sample[k-1]*Model(j,k);
-    Sample[j-1]=(double)norm_rand()*sqrt(Model(j,j))+cond_mean;
+    cond_mean=Model[j][0];
+    for(size_t k=1;k<j;k++) cond_mean+=Sample[k-1]*Model[j][k];
+    Sample[j-1]=(double)norm_rand()*sqrt(Model[j][j])+cond_mean;
   }
   
 PutRNGstate();

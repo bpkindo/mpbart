@@ -1,20 +1,24 @@
 #include <iostream>
 #include "tree.h"
 #include "info.h"
-#include <R.h>
+
+
 #include <R.h>
 #include <Rmath.h>
-#include <RcppArmadillo.h>
-#include <Rcpp.h>
+#include <R_ext/Lapack.h>
+
+
+
+using std::cout;
+using std::endl;
+
 
 #define LTPI 1.83787706640934536
-arma::vec condmom(arma::vec const& x, arma::vec const& mu, arma::mat const& sigmai, int p, int j);
 
+void condmom(double *x, double *mu, double *sigi, int p, int j, double *m, double *csig);
 double rtrun(double mu, double sigma,double trunpt, int above);
-
-arma::vec drawwi(arma::vec const& w, arma::vec const& mu, arma::mat const& sigmai, int p, int y);
-
-arma::vec draww(arma::vec const& w, arma::vec const& mu, arma::mat const& sigmai, arma::ivec const& y);
+void drawwi(double *w, double *mu, double *sigmai,int *p, int *y);
+void draww(double *w, double *mu, double *sigmai, int *n, int *p, int *y);
 // get cut-points
 void getcutpoints(int nc, int n_cov, int n_samp,
                  std::vector<std::vector<double> >& X, xinfo& xi);
@@ -26,9 +30,8 @@ void fit(tree& t, std::vector<std::vector<double> >& X, dinfo di, xinfo& xi, std
 
 // get pseudo response
 void getpseudoresponse(dinfo& di, std::vector<std::vector<double> >& ftemp,  
-						std::vector<std::vector<double> >& rtemp, arma::mat& sigmai,
+						std::vector<std::vector<double> >& rtemp, double *sigmai,
 						std::vector<std::vector<double> >& r, std::vector<double>& condsig);
-Rcpp::List rwishart(int const& nu, arma::mat const& V);
 //--------------------------------------------------
 //log of the integrated likelihood						
 double lil(size_t n, double sy, double sy2, double sigma, double tau);
@@ -62,22 +65,29 @@ double getpb(tree& t, xinfo& xi, pinfo& pi, tree::npv& goodbots);
 
 void drmu(std::vector<std::vector<double> >& X, tree& t, xinfo& xi, dinfo& di, pinfo& pi);
 
-/*
+
+void dinv(std::vector<std::vector<double> >& X,
+	  int	size,
+	  std::vector<std::vector<double> >& X_inv);
 void dcholdc(std::vector<std::vector<double> >& X, int size, std::vector<std::vector<double> >& L); 
-*/
-void rWish(arma::mat& Sample,
-	   arma::mat& S,
-	   size_t df,
-	   size_t size);		 
-			
-void readx(std::vector<std::vector<std::vector<double> > >& XMat,dinfo& di, arma::mat const& pX);
+
+void rWish(std::vector<std::vector<double> >& Sample,
+	   std::vector<std::vector<double> >& S,
+	   int df,
+	   int size);
+	
+		 
+void DrawSigma(dinfo& di, double *V, std::vector<std::vector<double> >& allfit, 
+				double *w, std::vector<std::vector<double> >& WishSample, int nu);
+				
+void readx(std::vector<std::vector<std::vector<double> > >& XMat,dinfo& di, double *pX);
 	   
-void SWP(arma::mat& X,
+void SWP(std::vector<std::vector<double> >& X,
 	 size_t k,
 	 size_t size);
 	 
 void rMVN(                      
 	  std::vector<double>& Sample,
 	  std::vector<double>& mean,
-	  arma::mat& Var,
+	  std::vector<std::vector<double> >& Var,
 	  size_t size);

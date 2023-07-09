@@ -1,11 +1,16 @@
 Package: mpbart
 Title: Multinomial Probit Bayesian Additive Regression Trees
-Version: 0.2
+Version: 0.3
 Authors@R: person("Bereket", "Kindo", email = "bpkindo@gmail.com", role = c("aut", "cre"))
 Description: Fits Multinomial Probit Bayesian Additive Regression Trees.
-Depends: 
-    R (>= 3.2.2), mlbench, bayesm, cvTools, mlogit
+Depends: R (>= 3.2.2), mlbench, bayesm, cvTools, mlogit
 License: GPL (>= 2)
 LazyData: true
-LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 5.0.1
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+NeedsCompilation: yes
+Packaged: 2023-07-03 10:01:22 UTC; bereket
+Author: Bereket Kindo [aut, cre]
+Maintainer: Bereket Kindo <bpkindo@gmail.com>
+Repository: Github
+Date/Publication: 2023-07-03 12:39:20
